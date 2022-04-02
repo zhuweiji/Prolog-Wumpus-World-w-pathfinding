@@ -1,0 +1,15 @@
+getForwardRoom(r(X0,Y0),D0,r(XN,YN)) :-
+    (D0 = n, XN is X0, YN is Y0+1);
+    (D0 = e, XN is X0+1, YN is Y0);
+    (D0 = s, XN is X0, YN is Y0-1);
+    (D0 = w, XN is X0-1, YN is Y0).
+
+parent(a,b).
+parent(b,c).
+
+related(X,Y) :- parent(X,Y).
+/*	
+related(X, Y) :- 
+	parent(X,Z),
+	related(Z,Y).
+*/
