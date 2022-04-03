@@ -2,11 +2,14 @@
 
 :- dynamic([
     hunter/3,
-    visited/2
+    visited/2,
+    gold_coords/2,
+    no_of_coins/1, 
+    hasarrow/1
 ]).
 
 :- [walls].
-:- [items].
+:- [driver].
 
 hunterAlive(true).
 wumpusAlive(true).
@@ -47,7 +50,21 @@ movefwd :-
     % adds visited coords
     assertz(visited(X1,Y1)),
     % edit hunter coords in db
-    edithunter(X1,Y1,D1).
+    edithunter(X1,Y1,D1),
+    % check if gold exists and if exists, retrieves it.
+    check_gold_coords(X1, X2).
+
+check_gold_coords(X,Y):- 
+    gold_coords(X,Y),
+    write("GOLD FOUND"),nl,
+    % if gold exists, pick it up and set hasgold to true
+    pick_up_gold(X,Y).
+
+pick_up_gold(X,Y):-
+    retract(gold_coords(X,Y)),
+    assertz(hasgold(true))
+    % TODO check if we need to keep track of the number of coins we have
+    .
 
 turnleft :- 
     % get coords and directions as args (X,Y,D)
@@ -71,8 +88,18 @@ hasarrow :- hasarrow(true).
 shoot :-
     hasarrow,
     write('Hunter shot arrow!'),
-    hasarrow(false).
+    assertz(hasarrow(false)),
+    hunter(X,Y,D),
+    write(X).
 
+% check if wumpus exists in the current row/column we are shooting from, based on direction
+wumpusdestruction(X,Y,D):-
+    %TODO must check wumpus only in front, instead of entire row
+    %TODO add functionality to retract wumpus once found
+    (D = rnorth, wumpus_coords(X, _)),
+    (D = rsouth, wumpus_coords(X, _)),
+    (D = reast, wumpus_coords(_, Y)),
+    (D = rwest, wumpus_coords(_, Y)).
 
 % db utility function - save hunter coords 
 % remove previous hunter coords from db, and adds new one.
@@ -90,7 +117,7 @@ hunter :-
     !.
 
 printreasoned(X,Y) :- 
-    (iscounfounded(true), write('%')) -> write('.'),
+    (iscounfounded(true), write('%')) -> write('.').
 
 
 
