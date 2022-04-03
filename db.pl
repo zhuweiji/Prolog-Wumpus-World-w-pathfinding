@@ -5,7 +5,10 @@
 % tells the compiler that these are variables which will change at runtime
 :- dynamic([
     hunter/3,
-    visited/2
+    visited/2,
+    gold_coords/2,
+    no_of_coins/1, 
+    hasarrow/1
 ]).
 
 % import these .pl files
@@ -28,7 +31,6 @@ iscounfounded(false).
 % wumpus(X,Y) :- true.
 % confundus(X,Y) :- true.
 % tingle(X,Y) :- true.
-% glitter(X,Y) :- true.
 % stench(X,Y) :- true.
 
 % delete all stored data that hunter has collected
@@ -39,6 +41,18 @@ reborn :-
     assertz(hunter(1,1,n)),
     assertz(visited(1,1)).
 
+% pickup might be removed from inside here and moved into agent at some later stage
+glitter(X,Y):- 
+    gold_coords(X,Y),
+    write("GOLD FOUND"),nl,
+    % if gold exists, pick it up and set hasgold to true
+    pickup(X,Y).
+
+pickup(X,Y):-
+    retract(gold_coords(X,Y)),
+    assertz(hasgold(true))
+    % TODO check if we need to keep track of the number of coins we have
+    .
 
 movefwd :-
     % get coords and directions as args (X,Y,D)
@@ -55,7 +69,9 @@ movefwd :-
     % adds visited coords
     assertz(visited(X1,Y1)),
     % edit hunter coords in db
-    edithunter(X1,Y1,D1).
+    edithunter(X1,Y1,D1),
+    % check if gold exists and if exists, retrieves it.
+    check_gold_coords(X1, X2).
 
 turnleft :- 
     % get coords and directions as args (X,Y,D)
@@ -76,9 +92,6 @@ shoot :-
     write('Hunter shot arrow!'),
     assertz(hasarrow(false)).
 
-pickup :-
-    true.
-
 explore(L) :- 
     % Take first item from list and store remainder in Ls
     [Action|Ls] = L,
@@ -94,8 +107,17 @@ explore(L) :-
     % check action list is not empty, terminate otherwise
     ) -> (Ls=[] -> true; explore(Ls)); write(Action),write(' is not a valid action'),false.
     
-isSafeMove
+isSafeMove :- true.
 
+
+% check if wumpus exists in the current row/column we are shooting from, based on direction
+wumpusdestruction(X,Y,D):-
+    %TODO must check wumpus only in front, instead of entire row
+    %TODO add functionality to retract wumpus once found
+    (D = rnorth, wumpus_coords(X, _)),
+    (D = rsouth, wumpus_coords(X, _)),
+    (D = reast, wumpus_coords(_, Y)),
+    (D = rwest, wumpus_coords(_, Y)).
 
 % alias for hunter, since current/3 is required by specification but hunter/3 was written before that
 current(X,Y,D) :-
