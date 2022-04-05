@@ -1,11 +1,11 @@
 from helpers import config
-
+from helpers import Constants
 
 class Driver:
     def __init__(self, position, direction, world_map) -> None:
         self.position = position
         self.direction = direction
-        self.directionList = ["RNorth", "REast", "RSouth", "RWest"]
+        self.directionList = [Constants.Directions.RNorth, Constants.Directions.REast, Constants.Directions.RSouth, Constants.Directions.RWest]
         self.world_map = world_map
         self.coins = 0
         self.arrow = 1
@@ -24,7 +24,7 @@ class Driver:
         perceptionList = []
 
         for instruction in instructionList:
-            if (instruction == "turnleft"):
+            if (instruction == Constants.Instructions.TURN_LEFT):
                 if (self.direction == self.directionList[0]):
                     self.direction = self.directionList[3]
                 elif (self.direction == self.directionList[1]):
@@ -34,7 +34,7 @@ class Driver:
                 else:
                     self.direction = self.directionList[2]
 
-            elif (instruction == "turnright"):
+            elif (instruction == Constants.Instructions.TURN_RIGHT):
                 if (self.direction == self.directionList[0]):
                     self.direction = self.directionList[1]
                 elif (self.direction == self.directionList[1]):
@@ -45,7 +45,7 @@ class Driver:
                     self.direction = self.directionList[0]
 
             # TODO : Check for collisions
-            elif (instruction == "moveforward"):
+            elif (instruction == Constants.Instructions.MOVE_FORWARD):
                 curr_x = self.position[0]
                 curr_y = self.position[1]
                 if (self.direction == self.directionList[0]):
@@ -72,7 +72,7 @@ class Driver:
                     perceptionList.append('B')
                     break
 
-            elif (instruction == "pickup"):
+            elif (instruction == Constants.Instructions.PICKUP):
                 # sanity check : Check if coin exists
                 curr_x = self.position[0]
                 curr_y = self.position[1]
