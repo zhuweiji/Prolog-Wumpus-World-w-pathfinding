@@ -2,7 +2,7 @@ from helpers import config
 from pyswip import Prolog
 
 prolog = Prolog()
-prolog.consult("driver.pl")
+prolog.consult("../driver.pl")
 
 def generate_surrounding_indicators(item_coords):    
     max_x, max_y = config.MAP_SIZE
@@ -81,8 +81,6 @@ def map_generator():
 
     stench_coords = generate_surrounding_indicators(wumpus_coords)
     tingle_coords = generate_surrounding_indicators(portal_coords)
-    glitter_coords = generate_surrounding_indicators(gold_coords)
-    print(f"Glitter Coordinates : {glitter_coords}")
 
     world_map = [['','','','','','',''],
                 ['','','','','','',''],
@@ -97,22 +95,20 @@ def map_generator():
             if coords in wumpus_coords:
                 world_map[i][j] += 'W'
             if coords in gold_coords:
-                world_map[i][j] += 'G'
+                world_map[i][j] += '*'
             if coords in portal_coords:
                 world_map[i][j] += 'P'
             if coords in stench_coords:
                 world_map[i][j] += 'S'
             if coords in tingle_coords:
                 world_map[i][j] += 'T'
-            if coords in glitter_coords:
-                world_map[i][j] += 'X'
             if (world_map[i][j] == ''):
                 world_map[i][j] = '.'
 
-    for i in range (0, len(world_map)):
-        for j in range(0, len(world_map[i])):
-            print(world_map[i][j], end="\t")
-        print()
+    # for i in range (0, len(world_map)):
+    #     for j in range(0, len(world_map[i])):
+    #         print(world_map[i][j], end="\t")
+    #     print()
 
     return world_map
 

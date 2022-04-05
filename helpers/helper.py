@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from helpers import config
+from driver.helpers import config
 
 wall_filepath = Path.cwd() / 'walls.pl'
 print(wall_filepath)

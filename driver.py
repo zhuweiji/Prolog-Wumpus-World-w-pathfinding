@@ -1,6 +1,6 @@
 from pyswip import Prolog
-from helpers import helper
-from map_functions.map_generator import map_generator
+from driver.helpers import helper
+from driver.map_functions.map_generator import map_generator
 
 prolog = Prolog()
 prolog.consult("driver.pl")
