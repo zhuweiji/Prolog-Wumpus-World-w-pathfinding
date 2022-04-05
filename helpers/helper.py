@@ -16,10 +16,10 @@ def create_walls():
     
     wall_code = list({k:0 for k in wall_code})
     
-    print(f"Adding wall code: {wall_code}")
+    # print(f"Adding wall code: {wall_code}")
     
     with open(wall_filepath, 'w+') as f:
-        print(f)
+        # print(f)
         for wall in wall_code:
             f.write(f"{wall}.")
             f.write('\n')
