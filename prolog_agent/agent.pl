@@ -170,20 +170,19 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
     (
         % format('~w~n',[ListOfActions]),
         % if explore tries to go > 7 cells exploration has definitely failed
-        (stopexplore(X0,Y0) -> write('Failed to find a room to explore to'))
+        % (stopexplore(X0,Y0) -> false)
         
         % turn and continue exploration if room in front is not safe
-        ; ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
+        ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
             , simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
             , bexplore([X1,Y1,D1], ListOfActions)
             )
 
         % stop exploration when next room in front is not visited
-        ; (fwdRoomNotVisited(X0,Y0,D0) -> Action = moveforward)
+        ; (\+ visited(X0,Y0))
 
         % otherwise recurse and find a solution that meets base cases
         ; (
-            write('recurse'),
             simPerformAction([X0,Y0,D0],[X1,Y1,D1], Action)
             , bexplore([X1,Y1,D1], ListOfActions)
         )
