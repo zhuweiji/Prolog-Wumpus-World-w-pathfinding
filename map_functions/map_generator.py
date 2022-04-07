@@ -1,8 +1,6 @@
 from helpers import config
 from pyswip import Prolog
 
-prolog = Prolog()
-prolog.consult("../map.pl")
 
 def generate_surrounding_indicators(item_coords):    
     max_x, max_y = config.MAP_SIZE
@@ -62,7 +60,9 @@ def generate_surrounding_indicators(item_coords):
         
     return item_indicator_coords
 
-def map_generator():
+def map_generator(filePath):
+    prolog = Prolog()
+    prolog.consult(filePath)
 
     x,y = config.MAP_SIZE
 
@@ -70,14 +70,14 @@ def map_generator():
     gold_coords = []
     portal_coords = []
 
-    for soln in prolog.query("wumpus_coords(X,Y)"):
-        wumpus_coords.append([int(soln["X"]), int(soln["Y"])])
-    
-    for soln in prolog.query("gold_coords(X,Y)"):
-        gold_coords.append([int(soln["X"]), int(soln["Y"])])
-
-    for soln in prolog.query("portal_coords(X,Y)"):
-        portal_coords.append([int(soln["X"]), int(soln["Y"])])
+    # for soln in prolog.query("wumpus_coords(X,Y)"):
+    #     wumpus_coords.append([int(soln["X"]), int(soln["Y"])])
+    #
+    # for soln in prolog.query("gold_coords(X,Y)"):
+    #     gold_coords.append([int(soln["X"]), int(soln["Y"])])
+    #
+    # for soln in prolog.query("portal_coords(X,Y)"):
+    #     portal_coords.append([int(soln["X"]), int(soln["Y"])])
 
     stench_coords = generate_surrounding_indicators(wumpus_coords)
     tingle_coords = generate_surrounding_indicators(portal_coords)
