@@ -165,29 +165,38 @@ fwdRoomIsWall(X,Y,D) :-
 
 explore(L) :-
     hunter(X,Y,D) ->
-    bexplore([X,Y,D], L),!.
+    bexplore([X,Y,D], L, 100),!.
 
 % generate a list of actions to another (safe) cell using the agent's knowledge of the world
-bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
+bexplore([X0,Y0,D0], [Action|ListOfActions], Iterations) :-
     (
         % if explore tries to go > 7 cells exploration has definitely failed
         % (stopexplore(X0,Y0) -> false)
-         
         % stop exploration when next room in front is not visited
-        (\+ visited(X0,Y0))
 
-        % turn and continue exploration if room in front is not safe
-        ; ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
-            , simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
-            , bexplore([X1,Y1,D1], ListOfActions)
+        I1 is Iterations-1 
+        
+        , (
+            (\+ visited(X0,Y0))
+            
+            ; (Iterations = 0, simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
+                , bexplore([X1,Y1,D1], ListOfActions, 20)
+                )
+            
+
+            % turn and continue exploration if room in front is not safe
+            ; ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
+                , simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
+                , bexplore([X1,Y1,D1], ListOfActions, I1)
+                )
+
+
+            % otherwise recurse and find a solution that meets base cases
+            ; (
+                moveforward([X0,Y0,D0],[X1,Y1,D1])
+                , Action=moveforward
+                , bexplore([X1,Y1,D1], ListOfActions, I1)
             )
-
-
-        % otherwise recurse and find a solution that meets base cases
-        ; (
-            moveforward([X0,Y0,D0],[X1,Y1,D1])
-            , Action=moveforward
-            , bexplore([X1,Y1,D1], ListOfActions)
         )
     )
     .
@@ -263,7 +272,7 @@ performActions([], _).
 performActions([Action|Tail], Bump) :- 
     performAction(Action)
     ,
-    (Tail=moveforward, Bump=on, true)
+    (Tail=[moveforward], Bump=on, true)
     ; performActions(Tail, Bump)
     .   
 
