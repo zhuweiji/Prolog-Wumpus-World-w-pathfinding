@@ -97,9 +97,9 @@ def map_generator():
             if coords in gold_coords:
                 world_map[i][j] += '*'
             if coords in portal_coords:
-                world_map[i][j] += 'P'
+                world_map[i][j] += 'O'
             if coords in stench_coords:
-                world_map[i][j] += 'S'
+                world_map[i][j] += '='
             if coords in tingle_coords:
                 world_map[i][j] += 'T'
             if (world_map[i][j] == ''):
