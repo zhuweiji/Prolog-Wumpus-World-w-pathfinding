@@ -250,7 +250,7 @@ simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action) :-
 
 % execute a set of actions, moving the agent through the world. Agent is given list of percepts noticed in the new cell.
 move(ListOfActions, Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
-    performActions(ListOfActions)
+    performActions(ListOfActions, Bump)
     , hunter(X,Y,_)
     ,!
     , usePrecepts([X,Y], Confounded, Stench, Tingle, Glitter, Bump, Scream)
@@ -260,13 +260,13 @@ move(ListOfActions, Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
     .
     
 performActions([]).
-performActions([Action|Tail]) :- 
-    performAction(Action)
+performActions([Action|Tail], Bump) :- 
+    performAction(Action, Bump)
     , performActions(Tail)
     .   
 
-performAction(Action) :-
-    (Action=moveforward -> agentActualMovefwd)
+performAction(Action, Bump) :-
+    (Action=moveforward , (\+ Bump -> agentActualMovefwd); true)
     ; (Action=turnleft -> hunterActualTurnleft)
     ; (Action=turnright -> hunterActualTurnright)
     ; (Action=shoot -> hunterActualShoot)
