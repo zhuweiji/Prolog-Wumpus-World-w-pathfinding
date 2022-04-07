@@ -170,8 +170,6 @@ explore(L) :-
 % generate a list of actions to another (safe) cell using the agent's knowledge of the world
 bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
     (
-        format('~w~n',[ListOfActions]),
-        sleep(1),
         % if explore tries to go > 7 cells exploration has definitely failed
         % (stopexplore(X0,Y0) -> false)
          
@@ -181,8 +179,6 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
         % turn and continue exploration if room in front is not safe
         ; ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
             , simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
-            ,format('NOT SAFE:~w/~w/~w - ~w|~w~n',[X0,Y0,D0,Action,ListOfActions])    
-
             , bexplore([X1,Y1,D1], ListOfActions)
             )
 
@@ -191,8 +187,6 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
         ; (
             moveforward([X0,Y0,D0],[X1,Y1,D1])
             , Action=moveforward
-            ,format('SAFE:~w/~w/~w - ~w~n',[X0,Y0,D0,Action])    
-
             , bexplore([X1,Y1,D1], ListOfActions)
         )
     )
