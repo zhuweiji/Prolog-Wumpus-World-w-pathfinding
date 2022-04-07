@@ -57,7 +57,12 @@ addPossibleWumpus([Room|AdjRoomsTail]) :-
 verifyPossibleWumpus(OwnRoom, AdjRoom) :-
     [OX,OY] = OwnRoom
     , [WX, WY] = AdjRoom
-    , (\+ stench(OX,OY) -> retractall(possibleWumpus(WX, WY)), format('Wumpus not in room (~w,~w)', [WX, WY]))
+    ,!
+    , (
+        possibleWumpus(WX, WY) ->
+        (\+ stench(OX,OY) -> retractall(possibleWumpus(WX, WY)), format('Wumpus not in room (~w,~w)~n', [WX, WY]))
+        ; true
+    )
     .
 
 % add fact that tingle is at square, and note possible portal locations
@@ -76,7 +81,12 @@ addPossibleConfundus([Room|AdjRoomsTail]) :-
 verifyPossibleConfundus(OwnRoom, AdjRoom) :-
     [OX,OY] = OwnRoom
     , [CX, CY] = AdjRoom
-    , (\+ tingle(OX,OY) -> retract(possibleConfundus(CX, CY), format('Confundus not in room (~w,~w)', [WX, WY])))
+    ,!
+    , (
+        possibleConfundus(CX,CY) -> 
+        (\+ tingle(OX,OY) -> retractall(possibleConfundus(CX, CY)), format('Confundus not in room (~w,~w)~n', [CX, CY]))
+        ; true
+    )
     .
 
 % add fact that wall is in front. 
@@ -125,10 +135,10 @@ verifyInformationInAdjRooms([X,Y], AdjRooms) :-
     
 
 stopexplore(X,Y) :-
-    X > 7
-    ; X < 0
-    ; Y > 7
-    ; Y < 0
+    X >= 7
+    ; X =< 0
+    ; Y >= 7
+    ; Y =< 0
     .
 
 roomIsDangerous(X,Y) :-
@@ -146,6 +156,11 @@ fwdRoomNotVisited(X,Y, D) :-
     , \+ visited(X1,Y1)
     .   
 
+fwdRoomIsWall(X,Y,D) :-
+    getForwardRoom([X,Y,D], [X1,Y1])
+    ,!, wall(X1,Y1)
+    .
+
 explore(L) :-
     hunter(X,Y,D) ->
     bexplore([X,Y,D], L).
@@ -158,7 +173,7 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
         (stopexplore(X0,Y0) -> write('Failed to find a room to explore to'))
         
         % turn and continue exploration if room in front is not safe
-        ; (fwdRoomNotSafe(X0,Y0,D0)
+        ; ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
             , simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
             , bexplore([X1,Y1,D1], ListOfActions)
             )
@@ -195,16 +210,16 @@ shoot :- true.
 %     .   
 
 simPerformAction([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=moveFwd -> moveforward([X0,Y0,D0],[X1,Y1, D0]))
-    ; (Action=turnLeft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=turnRight -> turnright([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=moveforward -> moveforward([X0,Y0,D0],[X1,Y1, D0]))
+    ; (Action=turnleft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnright -> turnright([X0,Y0,D0],[X1,Y1, D1]))
     % ; (Action=shoot -> shoot)
     % ; (Action=pickup -> pickup)
     .
 
 simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=turnLeft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=turnRight -> turnright([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=turnleft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnright -> turnright([X0,Y0,D0],[X1,Y1, D1]))
     .
 
 % findSafeRoom(L, ResultX, ResultY) :-
@@ -235,8 +250,11 @@ simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action) :-
 move(ListOfActions, Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
     performActions(ListOfActions)
     , hunter(X,Y,_)
+    ,!
     , usePrecepts([X,Y], Confounded, Stench, Tingle, Glitter, Bump, Scream)
+    ,!
     , inferIfLackOfPrecepts([X,Y])
+    ,!
     .
     
 performActions([]).
@@ -258,7 +276,12 @@ performAction(Action) :-
 reborn :-
     retractall(hunter(_,_,_)),
     retractall(visited(_,_)),
-    % TODO remove stench/tingle etc knowledge
+
+    retractall(stench(_,_)),
+    retractall(tingle(_,_)),
+    retractall(wall(_,_)),
+    retractall(possibleWumpus(_,_)),
+    retractall(possibleConfundus(_,_)),
 
     assertz(hunter(1,1,rnorth)),
     assertz(visited(1,1)).
@@ -274,7 +297,7 @@ agentActualMovefwd :-
     % adds visited coords
     assertz(visited(X1,Y1)) ->
     % edit hunter coords in db
-    edithunter(X1,Y1,D1).
+    edithunter(X1,Y1,D).
 
 hunterActualTurnleft :- 
     % get coords and directions as args (X,Y,D)
