@@ -184,6 +184,7 @@ class Driver:
         bump = "off"
         scream = "off"
         for perception in self.percepts:
+            # print(f"self.percepts : {self.percepts}")
             if (perception == "="):
                 # stench found
                 stench = "on"
@@ -194,6 +195,7 @@ class Driver:
                 # tingle from nearby portal
                 tingle = "on"
             elif (perception == "O"):
+                print("Found confounded")
                 # stepped on portal
                 confounded = "on"
             elif (perception == "B"):

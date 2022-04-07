@@ -70,14 +70,14 @@ def map_generator(filePath):
     gold_coords = []
     portal_coords = []
 
-    # for soln in prolog.query("wumpus_coords(X,Y)"):
-    #     wumpus_coords.append([int(soln["X"]), int(soln["Y"])])
-    #
-    # for soln in prolog.query("gold_coords(X,Y)"):
-    #     gold_coords.append([int(soln["X"]), int(soln["Y"])])
-    #
-    # for soln in prolog.query("portal_coords(X,Y)"):
-    #     portal_coords.append([int(soln["X"]), int(soln["Y"])])
+    for soln in prolog.query("wumpus_coords(X,Y)"):
+        wumpus_coords.append([int(soln["X"]), int(soln["Y"])])
+
+    for soln in prolog.query("gold_coords(X,Y)"):
+        gold_coords.append([int(soln["X"]), int(soln["Y"])])
+
+    for soln in prolog.query("portal_coords(X,Y)"):
+        portal_coords.append([int(soln["X"]), int(soln["Y"])])
 
     stench_coords = generate_surrounding_indicators(wumpus_coords)
     tingle_coords = generate_surrounding_indicators(portal_coords)

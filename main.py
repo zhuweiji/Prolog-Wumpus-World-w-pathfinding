@@ -24,7 +24,7 @@ if (__name__ == "__main__"):
             move_list = soln["L"][0:endIndex]
             if (type(soln["L"][-1]) == str):
                 move_list.append(soln["L"][-1])
-            # print(f"Theoretical Move List : {move_list}")
+            print(f"Suggested Move List : {move_list}")
 
         # print(move_list)
         build_perception = d.move(move_list)
@@ -32,10 +32,11 @@ if (__name__ == "__main__"):
         # print(f"Driver Position : {d.position}")
 
         instruction = f"move({move_list},{build_perception})"
-        print(instruction)
+        print(f"Agent Instruction:\t {instruction}")
 
         result = list(prolog.query(instruction))
         # print(f"Result : {result}")
+        print()
 
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
