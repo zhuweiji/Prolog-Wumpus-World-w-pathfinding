@@ -261,12 +261,15 @@ move(ListOfActions, Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
     
 performActions([], _).
 performActions([Action|Tail], Bump) :- 
-    performAction(Action, Bump)
-    , performActions(Tail, Bump)
+    performAction(Action)
+    ,
+    (Tail=moveforward, Bump=on, true)
+    ; performActions(Tail, Bump)
     .   
 
-performAction(Action, Bump) :-
-    (Action=moveforward , (\+ Bump=on -> agentActualMovefwd); true)
+
+performAction(Action) :-
+    (Action=moveforward -> agentActualMovefwd)
     ; (Action=turnleft -> hunterActualTurnleft)
     ; (Action=turnright -> hunterActualTurnright)
     ; (Action=shoot -> hunterActualShoot)
