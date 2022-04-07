@@ -134,12 +134,12 @@ verifyInformationInAdjRooms([X,Y], AdjRooms) :-
     , (AdjRoomsTail = [], verifyInformationInAdjRooms([X,Y], AdjRoomsTail)) ; true.
     
 
-stopexplore(X,Y) :-
-    X >= 7
-    ; X =< 0
-    ; Y >= 7
-    ; Y =< 0
-    .
+% stopexplore(X,Y) :-
+%     X >= 7
+%     ; X =< 0
+%     ; Y >= 7
+%     ; Y =< 0
+%     .
 
 roomIsDangerous(X,Y) :-
     possibleWumpus(X, Y)
@@ -148,7 +148,9 @@ roomIsDangerous(X,Y) :-
 
 fwdRoomNotSafe(X,Y, D) :-
     getForwardRoom([X,Y,D], [X1,Y1])
+    ,!
     , roomIsDangerous(X1, Y1)
+    ,!
     .
 
 fwdRoomNotVisited(X,Y, D) :-
@@ -168,22 +170,23 @@ explore(L) :-
 % generate a list of actions to another (safe) cell using the agent's knowledge of the world
 bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
     (
-        % format('~w~n',[ListOfActions]),
         % if explore tries to go > 7 cells exploration has definitely failed
         % (stopexplore(X0,Y0) -> false)
          
+        % stop exploration when next room in front is not visited
+        (\+ visited(X0,Y0))
+
         % turn and continue exploration if room in front is not safe
-        ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
+        ; ( (fwdRoomNotSafe(X0,Y0,D0); fwdRoomIsWall(X0,Y0,D0))
             , simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
             , bexplore([X1,Y1,D1], ListOfActions)
             )
 
-        % stop exploration when next room in front is not visited
-        ; (\+ visited(X0,Y0))
 
         % otherwise recurse and find a solution that meets base cases
         ; (
-            simPerformAction([X0,Y0,D0],[X1,Y1,D1], Action)
+            moveforward([X0,Y0,D0],[X1,Y1,D1])
+            , Action=moveforward
             , bexplore([X1,Y1,D1], ListOfActions)
         )
     )
@@ -209,16 +212,16 @@ shoot :- true.
 %     .   
 
 simPerformAction([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=moveforward -> moveforward([X0,Y0,D0],[X1,Y1, D0]))
-    ; (Action=turnleft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=turnright -> turnright([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=moveforward , moveforward([X0,Y0,D0],[X1,Y1, D0]))
+    ; (Action=turnleft , turnleft([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnright , turnright([X0,Y0,D0],[X1,Y1, D1]))
     % ; (Action=shoot -> shoot)
     % ; (Action=pickup -> pickup)
     .
 
 simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=turnleft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=turnright -> turnright([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=turnright , turnright([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnleft , turnleft([X0,Y0,D0],[X1,Y1, D1]))
     .
 
 % findSafeRoom(L, ResultX, ResultY) :-
