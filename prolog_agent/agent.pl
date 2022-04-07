@@ -164,7 +164,7 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
             )
 
         % stop exploration when next room in front is not visited
-        ; (fwdRoomNotVisited(X0,Y0,D0) -> Action = simMoveFwd)
+        ; (fwdRoomNotVisited(X0,Y0,D0) -> Action = moveFwd)
 
         % otherwise recurse and find a solution that meets base cases
         ; (
