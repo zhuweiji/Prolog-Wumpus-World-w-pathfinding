@@ -2,7 +2,6 @@ from helpers import config
 from helpers import Constants
 import sys
 
-
 class Driver:
     def __init__(self, position, direction, world_map) -> None:
         self.position = position
