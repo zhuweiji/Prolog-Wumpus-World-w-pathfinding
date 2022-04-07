@@ -6,8 +6,8 @@ class Driver:
     def __init__(self, position, direction, world_map) -> None:
         self.position = position
         self.direction = direction
-        self.directionList = [Constants.Directions.R_NORTH, Constants.Directions.R_EAST, Constants.Directions.R_SOUTH,
-                              Constants.Directions.R_WEST]
+        self.directionList = [Constants.Directions.R_NORTH.value, Constants.Directions.R_EAST.value, Constants.Directions.R_SOUTH.value,
+                              Constants.Directions.R_WEST.value]
         self.world_map = world_map
         self.coins = 0
         self.arrow = 1
@@ -32,7 +32,7 @@ class Driver:
             if (self.current_move_count >= self.MAX_MOVES):
                 sys.exit(1)
 
-            if (instruction == Constants.Instructions.TURN_LEFT):
+            if (instruction == Constants.Instructions.TURN_LEFT.value):
                 """
                 self.directionList = [Constants.Directions.R_NORTH, Constants.Directions.R_EAST, Constants.Directions.R_SOUTH,
                               Constants.Directions.R_WEST]
@@ -46,7 +46,7 @@ class Driver:
                 else:
                     self.direction = self.directionList[2]
 
-            elif (instruction == Constants.Instructions.TURN_RIGHT):
+            elif (instruction == Constants.Instructions.TURN_RIGHT.value):
                 if (self.direction == self.directionList[0]):
                     self.direction = self.directionList[1]
                 elif (self.direction == self.directionList[1]):
@@ -57,7 +57,7 @@ class Driver:
                     self.direction = self.directionList[0]
 
             # TODO : Check for collisions
-            elif (instruction == Constants.Instructions.MOVE_FORWARD):
+            elif (instruction == Constants.Instructions.MOVE_FORWARD.value):
                 curr_x = self.position[0]
                 curr_y = self.position[1]
                 """
@@ -84,11 +84,11 @@ class Driver:
                 if not boolean_bump:
                     self.position = new_position
                 else:
-                    # print("Bump found")
+                    print("Bump found")
                     perceptionList.append('B')
                     break
 
-            elif (instruction == Constants.Instructions.PICKUP):
+            elif (instruction == Constants.Instructions.PICKUP.value):
                 # sanity check : Check if coin exists
                 curr_x = self.position[0]
                 curr_y = self.position[1]
@@ -99,7 +99,7 @@ class Driver:
                 # else:
                     # print("Invalid pickup instruction")
 
-            elif (instruction == Constants.Instructions.SHOOT):
+            elif (instruction == Constants.Instructions.SHOOT.value):
                 # TODO check if there is any wumpus ahead
                 self.shoot()
                 if (self.wumpus_check()):
@@ -120,13 +120,15 @@ class Driver:
         curr_y = self.position[1]
 
         self.world_map[curr_y][curr_x] += "-"
-        # self.print_map()
+        self.print_map()
+        self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("-", "")
 
         # check final position for percepts
         self.percepts = self.world_map[curr_y][curr_x]
         for perception in self.percepts:
             perceptionList.append(perception)
-        return perceptionList
+        built_perception = self.perception_builder()
+        return built_perception
 
     def wall_check(self, position):
         x, y = position[0], position[1]
@@ -143,21 +145,21 @@ class Driver:
         max_x, max_y = config.MAP_SIZE
 
         # Case 1 : R_North
-        if (self.direction == Constants.Directions.R_NORTH):
+        if (self.direction == Constants.Directions.R_NORTH.value):
             for i in range(current_y + 1, max_y):
                 perceptsList = self.world_map[i][current_x]
                 if "W" in perceptsList:
                     # print("WUMPUS SHOT")
                     return True
 
-        elif (self.direction == Constants.Directions.R_SOUTH):
+        elif (self.direction == Constants.Directions.R_SOUTH.value):
             for i in range(0, current_y):
                 perceptsList = self.world_map[i][current_x]
                 if "W" in perceptsList:
                     # print("WUMPUS SHOT")
                     return True
 
-        elif (self.direction == Constants.Directions.R_EAST):
+        elif (self.direction == Constants.Directions.R_EAST.value):
             i = self.world_map[current_y]
             for j in range(0, current_x):
                 perceptsList = i[j]
@@ -165,7 +167,7 @@ class Driver:
                     # print("WUMPUS SHOT")
                     return True
 
-        elif (self.direction == Constants.Directions.R_WEST):
+        elif (self.direction == Constants.Directions.R_WEST.value):
             i = self.world_map[current_y]
             for j in range(current_x + 1, max_x):
                 perceptsList = i[j]
@@ -173,8 +175,35 @@ class Driver:
                     # print("WUMPUS SHOT")
                     return True
 
-    def print(self):
-        return self.direction
+    def perception_builder(self):
+        # Confounded, Stench, Tingle, Glitter, Bump, Scream
+        confounded = "off"
+        stench = "off"
+        tingle = "off"
+        glitter = "off"
+        bump = "off"
+        scream = "off"
+        for perception in self.percepts:
+            if (perception == "="):
+                # stench found
+                stench = "on"
+            elif (perception == "*"):
+                # glitter found
+                glitter = "on"
+            elif (perception == "T"):
+                # tingle from nearby portal
+                tingle = "on"
+            elif (perception == "O"):
+                # stepped on portal
+                confounded = "on"
+            elif (perception == "B"):
+                # bumped into wall
+                bump = "on"
+            elif (perception == "@"):
+                # scream heard
+                scream = "on"
+        result = confounded +  "," +  stench  + "," + tingle  + "," +  glitter  + "," +  bump  + "," +  scream
+        return result
 
     def print_map(self):
         x, y = config.MAP_SIZE
