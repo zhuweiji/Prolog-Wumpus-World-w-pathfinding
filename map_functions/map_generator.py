@@ -2,7 +2,7 @@ from helpers import config
 from pyswip import Prolog
 
 prolog = Prolog()
-prolog.consult("../driver.pl")
+prolog.consult("../map.pl")
 
 def generate_surrounding_indicators(item_coords):    
     max_x, max_y = config.MAP_SIZE
