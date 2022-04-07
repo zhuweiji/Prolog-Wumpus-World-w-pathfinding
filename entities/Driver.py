@@ -182,3 +182,10 @@ class Driver:
             for j in range(0, x):
                 print(self.world_map[i][j], end="\t")
             print()
+
+
+def rightof(direction):
+    getvalue = lambda x: Constants.Directions[x].value
+    
+    if direction == getvalue('R_NORTH'):
+        return getvalue('R_EAST')
