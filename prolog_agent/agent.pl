@@ -159,11 +159,8 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
         
         % turn and continue exploration if room in front is not safe
         ; (fwdRoomNotSafe(X0,Y0,D0)
-            , write('not safe')
             , simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action)
-            , write(1)
             , bexplore([X1,Y1,D1], ListOfActions)
-            , write(2)
             )
 
         % stop exploration when next room in front is not visited
@@ -178,14 +175,17 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
     )
     .
 
-simMoveFwd([X0,Y0,D0],[X1,Y1, D0]) :-
+moveFwd([X0,Y0,D0],[X1,Y1, D0]) :-
     getForwardRoom([X0,Y0,D0],[X1,Y1]).
 
-simTurnLeft([X,Y,D0],[X,Y, D1]) :-
+turnLeft([X,Y,D0],[X,Y, D1]) :-
     leftof(D0,D1).
 
-simTurnRight([X,Y,D0],[X,Y, D1]) :-
+turnRight([X,Y,D0],[X,Y, D1]) :-
     rightof(D0,D1).
+
+pickup :- true.
+shoot :- true.
 
     
 % simPerformActions(_,_, []).
@@ -195,17 +195,18 @@ simTurnRight([X,Y,D0],[X,Y, D1]) :-
 %     .   
 
 simPerformAction([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=simMoveFwd -> simMoveFwd([X0,Y0,D0],[X1,Y1, D0]))
-    ; (Action=simTurnLeft -> simTurnLeft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=simTurnRight -> simTurnRight([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=moveFwd -> moveFwd([X0,Y0,D0],[X1,Y1, D0]))
+    ; (Action=turnLeft -> turnLeft([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnRight -> turnRight([X0,Y0,D0],[X1,Y1, D1]))
     % ; (Action=shoot -> shoot)
     % ; (Action=pickup -> pickup)
     .
 
 simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=simTurnLeft -> simTurnLeft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=simTurnRight -> simTurnRight([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=turnLeft -> turnLeft([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnRight -> turnRight([X0,Y0,D0],[X1,Y1, D1]))
     .
+
 % findSafeRoom(L, ResultX, ResultY) :-
 %     [H|T] = L
 %     , [X,Y] = H
@@ -245,11 +246,11 @@ performActions([Action|Tail]) :-
     .   
 
 performAction(Action) :-
-    (Action=simMoveFwd -> movefwd)
-    ; (Action=simTurnLeft -> turnleft)
-    ; (Action=simTurnRight -> turnright)
-    ; (Action=shoot -> shoot)
-    ; (Action=pickup -> pickup)
+    (Action=movefwd -> agentActualMovefwd)
+    ; (Action=turnleft -> hunterActualTurnleft)
+    ; (Action=turnright -> hunterActualTurnright)
+    ; (Action=shoot -> hunterActualShoot)
+    ; (Action=pickup -> hunterActualPickup)
     .
 
 % relocate agent on the map - agent now loses all relative knowledge that it has gained thus far
@@ -262,12 +263,8 @@ reborn :-
     assertz(hunter(1,1,rnorth)),
     assertz(visited(1,1)).
 
-% pickup a gold coin - no validation required because glitter only detected when coin in same square as agent
-pickup:-
-    addGoldCoin.
-
 % move the agent forward by one cell.
-movefwd :-
+agentActualMovefwd :-
     % get coords and directions as args (X,Y,D)
     hunter(X,Y,D) ->
 
@@ -279,24 +276,28 @@ movefwd :-
     % edit hunter coords in db
     edithunter(X1,Y1,D1).
 
-turnleft :- 
+hunterActualTurnleft :- 
     % get coords and directions as args (X,Y,D)
     hunter(X,Y,D),
     leftof(D,D1),
     format('Turned left from ~w to ~w~n', [D, D1]),
     edithunter(X,Y,D1).
 
-turnright :- 
+hunterActualTurnright :- 
     % get coords and directions as args (X,Y,D)
     hunter(X,Y,D),
     rightof(D, D1),
     format('Turned right from ~w to ~w~n', [D, D1]),
     edithunter(X,Y,D1).
 
-shoot :-
+hunterActualShoot :-
     hasarrow,
     write('Hunter shot arrow!'),
     assertz(hasarrow(false)).
+    
+% pickup a gold coin - no validation required because glitter only detected when coin in same square as agent
+hunterActualPickup:-
+    addGoldCoin.
 
 % deprecated version of explore - explore now computes the next set of actions to undertake
 % explore(L) :- 
