@@ -125,8 +125,8 @@ class Driver:
 
         # check final position for percepts
         self.percepts = self.world_map[curr_y][curr_x]
-        for perception in self.percepts:
-            perceptionList.append(perception)
+        for perception in perceptionList:
+            self.percepts += perception
         built_perception = self.perception_builder()
         return built_perception
 
