@@ -12,6 +12,8 @@ class Driver:
         self.coins = 0
         self.arrow = 1
         self.percepts = []
+        self.MAX_MOVES = 50
+        self.current_move_count = 0
 
     def shoot(self):
         self.arrow -= 1
@@ -26,6 +28,10 @@ class Driver:
         perceptionList = []
 
         for instruction in instructionList:
+
+            if (self.current_move_count >= self.MAX_MOVES):
+                sys.exit(1)
+
             if (instruction == Constants.Instructions.TURN_LEFT):
                 """
                 self.directionList = [Constants.Directions.R_NORTH, Constants.Directions.R_EAST, Constants.Directions.R_SOUTH,
@@ -99,6 +105,7 @@ class Driver:
                 if (self.wumpus_check()):
                     perceptionList.append("@")
 
+            # check for death condition
             if "W" in self.world_map[self.position[1]][self.position[0]]:
                 # print("Landed on WUMPUS")
                 # TODO check if we want to raise an exception here
@@ -106,6 +113,8 @@ class Driver:
                 # any integer from 0-255 should be fine
                 # TODO Determine what the different exit codes represent, if anything
                 sys.exit(1)
+
+            self.current_move_count += 1
 
         curr_x = self.position[0]
         curr_y = self.position[1]
