@@ -108,5 +108,16 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(cm.exception.code, 1)
 
 
+    # Test Maximum move count
+    def test_max_moves(self):
+        action_list = [Instructions.TURN_LEFT]
+        with self.assertRaises(SystemExit) as cm:
+            for i in range (0,52):
+                self.d.move(action_list)
+
+        self.assertEqual(cm.exception.code, 1)
+
+
+
 if (__name__ == "__main__"):
     unittest.main()
