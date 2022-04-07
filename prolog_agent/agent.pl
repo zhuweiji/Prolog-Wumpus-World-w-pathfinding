@@ -164,7 +164,7 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
             )
 
         % stop exploration when next room in front is not visited
-        ; (fwdRoomNotVisited(X0,Y0,D0) -> Action = moveFwd)
+        ; (fwdRoomNotVisited(X0,Y0,D0) -> Action = moveforward)
 
         % otherwise recurse and find a solution that meets base cases
         ; (
@@ -175,13 +175,13 @@ bexplore([X0,Y0,D0], [Action|ListOfActions]) :-
     )
     .
 
-moveFwd([X0,Y0,D0],[X1,Y1, D0]) :-
+moveforward([X0,Y0,D0],[X1,Y1, D0]) :-
     getForwardRoom([X0,Y0,D0],[X1,Y1]).
 
-turnLeft([X,Y,D0],[X,Y, D1]) :-
+turnleft([X,Y,D0],[X,Y, D1]) :-
     leftof(D0,D1).
 
-turnRight([X,Y,D0],[X,Y, D1]) :-
+turnright([X,Y,D0],[X,Y, D1]) :-
     rightof(D0,D1).
 
 pickup :- true.
@@ -195,16 +195,16 @@ shoot :- true.
 %     .   
 
 simPerformAction([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=moveFwd -> moveFwd([X0,Y0,D0],[X1,Y1, D0]))
-    ; (Action=turnLeft -> turnLeft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=turnRight -> turnRight([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=moveFwd -> moveforward([X0,Y0,D0],[X1,Y1, D0]))
+    ; (Action=turnLeft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnRight -> turnright([X0,Y0,D0],[X1,Y1, D1]))
     % ; (Action=shoot -> shoot)
     % ; (Action=pickup -> pickup)
     .
 
 simPerformTurn([X0,Y0,D0],[X1,Y1,D1], Action) :-
-    (Action=turnLeft -> turnLeft([X0,Y0,D0],[X1,Y1, D1]))
-    ; (Action=turnRight -> turnRight([X0,Y0,D0],[X1,Y1, D1]))
+    (Action=turnLeft -> turnleft([X0,Y0,D0],[X1,Y1, D1]))
+    ; (Action=turnRight -> turnright([X0,Y0,D0],[X1,Y1, D1]))
     .
 
 % findSafeRoom(L, ResultX, ResultY) :-
@@ -246,7 +246,7 @@ performActions([Action|Tail]) :-
     .   
 
 performAction(Action) :-
-    (Action=movefwd -> agentActualMovefwd)
+    (Action=moveforward -> agentActualMovefwd)
     ; (Action=turnleft -> hunterActualTurnleft)
     ; (Action=turnright -> hunterActualTurnright)
     ; (Action=shoot -> hunterActualShoot)
