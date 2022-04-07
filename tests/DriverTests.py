@@ -39,7 +39,7 @@ class DriverTest(unittest.TestCase):
                        Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
                        Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
         perceptionsList = self.d.move(action_list)
-        print(self.d.position)
+        print(f"Agent Position : {self.d.position}")
         self.assert_(self.d.position == [0, 5], True)
         # TODO assert the correct on inside perceptionlist instead of 'B'
         # self.assert_('B' in perceptionsList, True)

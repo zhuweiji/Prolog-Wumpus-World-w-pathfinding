@@ -32,7 +32,7 @@ if (__name__ == "__main__"):
         # print(f"Driver Position : {d.position}")
 
         instruction = f"move({move_list},{build_perception})"
-        # print(instruction)
+        print(instruction)
 
         result = list(prolog.query(instruction))
         # print(f"Result : {result}")
