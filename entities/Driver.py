@@ -139,7 +139,6 @@ class Driver:
         return False
 
     def wumpus_check(self) -> bool:
-
         current_x = self.position[0]
         current_y = self.position[1]
         max_x, max_y = config.MAP_SIZE
