@@ -33,8 +33,6 @@ class Driver:
             if (self.current_move_count >= self.MAX_MOVES):
                 sys.exit(1)
 
-            print(f"Current Position = {self.position}")
-
             if (instruction == Constants.Instructions.TURN_LEFT.value):
                 """
                 self.directionList = [Constants.Directions.R_NORTH, Constants.Directions.R_EAST, Constants.Directions.R_SOUTH,
@@ -86,9 +84,8 @@ class Driver:
                 if not boolean_bump:
                     self.position = new_position
                 else:
-                    print("Bump found")
+                    # print("Bump found")
                     perceptionList.append('B')
-                    break
 
             elif (instruction == Constants.Instructions.PICKUP.value):
                 # sanity check : Check if coin exists
@@ -112,7 +109,6 @@ class Driver:
 
             curr_x = self.position[0]
             curr_y = self.position[1]
-            print(f"[curr_x,cur_y] = [{curr_x}, {curr_y}]")
 
             # self.world_map[curr_y][curr_x] += "-"
             # self.print_map()
