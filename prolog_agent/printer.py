@@ -3,7 +3,11 @@ from dataclasses import dataclass, field
 from importlib.machinery import BuiltinImporter
 from pyswip import Prolog
 
+AXIS_SPACING = 3
+
+
 class KBSPrinterException(Exception): pass
+
 
 @dataclass 
 class PrologAgent:
@@ -50,6 +54,13 @@ class KnownWorld:
     def __post_init__(self) -> None:
         assert self.prolog_interface.query('printHunter.'), "Prolog interface to KBS printer not available"
         
+    def print_map(self):
+        map = self.create_map()
+        for row in map[::-1]:
+            nrow = str(row).replace(',','').replace(']','').replace('[','')
+            y_coords = row[0].coords[1]
+            spacing_req = AXIS_SPACING - len(str(y_coords))
+            print(f"{y_coords} {' '*spacing_req}| {nrow}")
         
     def create_map(self):       
         cells = {}
@@ -82,7 +93,7 @@ class KnownWorld:
             if coords[0] < min_x: min_x = coords[0]
             if coords[1] < min_y: min_y = coords[1]
         
-        print(max_x, max_y, min_x, min_y)
+        # print(max_x, max_y, min_x, min_y)
         map = []
         for yidx in range(min_y, max_y+1):
             row = []
@@ -91,8 +102,8 @@ class KnownWorld:
                 if coords in cells:
                     cell = cells[coords]
                 else:
-                    cell = MapCell()
-                    cells[coords] = MapCell()
+                    cell = MapCell(coords)
+                    cells[coords] = cell
                 row.append(cell)
             map.append(row)
         
@@ -107,6 +118,8 @@ class KnownWorld:
         self.stench = self.query_compound_coords("stench")
         self.tingle = self.query_compound_coords("tingle")
         self.wall = self.query_compound_coords("wall")
+        self.safe = self.query_compound_coords("safe")
+        
         
         self.possibleWumpus = self.query_compound_coords("possibleWumpus")
         self.possibleConfundus = self.query_compound_coords("possibleConfundus")
@@ -187,11 +200,7 @@ class MapCell:
 
     def __repr__(self):
         return self.__str__()
-        
-@dataclass
-class EmptyMapCell:
-        def __str__(self):
-            return f"|   |\n|   |\n|   |"
+
 
 if __name__ == "__main__":
     pl = Prolog()
@@ -216,6 +225,6 @@ if __name__ == "__main__":
         r = kbs.prolog_interface.query(query_str)
         list(r)
         
+        
         kbs.update_world()
-        for row in kbs.create_map():
-            print(row)
+        kbs.print_map()
