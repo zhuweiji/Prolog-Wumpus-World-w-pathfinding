@@ -271,8 +271,7 @@ inferIfLackOfPrecepts(room(X,Y)) :-
 % safe rooms are actually not important to the agent - only that a square is not dangerous
 setAllSurroundingRoomsAsSafe([]).
 setAllSurroundingRoomsAsSafe([room(X,Y)|T]) :-
-    true.
-    % assertz(safe(X,Y)), setAllSurroundingRoomsAsSafe(T).
+    assertz(safe(X,Y)), setAllSurroundingRoomsAsSafe(T).
 
 
 verifyInformationInAdjRooms(_, []).
