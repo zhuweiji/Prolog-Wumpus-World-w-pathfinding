@@ -22,7 +22,7 @@ if (__name__ == "__main__"):
             # print(type(soln["L"][0]))
             endIndex = len(soln["L"]) - 1
             move_list = soln["L"][0:endIndex]
-            print(soln["L"])
+            # print(soln["L"])
             if (type(soln["L"][-1]) == str):
                 move_list.append(soln["L"][-1])
             print(f"Suggested Move List : {move_list}")
