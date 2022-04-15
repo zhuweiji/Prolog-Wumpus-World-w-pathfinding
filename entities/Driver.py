@@ -196,6 +196,8 @@ class Driver:
                 print("Found confounded")
                 # stepped on portal
                 confounded = "on"
+                self.direction = Constants.Directions.R_NORTH.value
+                self.position = [4, 4]
                 # TODO reset coordinates to random point
             elif (perception == "B"):
                 # bumped into wall
@@ -211,7 +213,7 @@ class Driver:
 
     def print_map(self):
         x, y = config.MAP_SIZE
-        for i in range(0, y):
+        for i in reversed(range(0, y)):
             for j in range(0, x):
                 print(self.world_map[i][j], end="\t")
             print()
