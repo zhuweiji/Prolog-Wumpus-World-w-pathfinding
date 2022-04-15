@@ -88,8 +88,10 @@ class DriverTest(unittest.TestCase):
                        Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.SHOOT.value]
         # action_list = [Instructions.TURN_LEFT.value]
         perceptionList = self.d.move(action_list)
-        # TODO assert the correct on inside perceptionlist instead of '@'
-        # self.assert_("@" in perceptionList, True)
+        # split by comma to get list of perceptions ["off", "on", ...] instead of ["off, on, ..."]
+        # split the final element of perceptionList since that one corresponds to the shoot instruction and its percepts
+        perceptionList = perceptionList[-1].split(',')
+        self.assert_(perceptionList[-1]=="on")
 
     def test_west_wumpus_destruction(self):
         action_list = [Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value,
