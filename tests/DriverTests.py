@@ -24,7 +24,6 @@ class DriverTest(unittest.TestCase):
     def test_forward_movement(self):
         action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
         self.d.move(action_list)
-        print(self.d.position)
         self.assert_(self.d.position == [0, 3], True)
 
     def test_right_movement(self):

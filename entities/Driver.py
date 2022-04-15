@@ -33,6 +33,8 @@ class Driver:
             if (self.current_move_count >= self.MAX_MOVES):
                 sys.exit(1)
 
+            print(f"Current Position = {self.position}")
+
             if (instruction == Constants.Instructions.TURN_LEFT.value):
                 """
                 self.directionList = [Constants.Directions.R_NORTH, Constants.Directions.R_EAST, Constants.Directions.R_SOUTH,
