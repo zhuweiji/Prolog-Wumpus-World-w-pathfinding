@@ -27,6 +27,9 @@ if (__name__ == "__main__"):
                 move_list.append(soln["L"][-1])
             # print(f"Suggested Move List : {move_list}")
 
+        if (len(move_list)==0):
+            break
+
         print(f"Driver Position before movement: {d.position}")
         CompoundListOfPerceptionStrings = d.move(move_list)
         print(f"Driver Position after  movement: {d.position}")
@@ -47,6 +50,3 @@ if (__name__ == "__main__"):
             # print(f"Agent Instruction:\t {instruction}")
             result = list(prolog.query(instruction))
             # print(f"Result : {result}")
-            print("-----------------------------------------------------------")
-
-
