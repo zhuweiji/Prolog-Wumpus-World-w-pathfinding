@@ -57,13 +57,12 @@ class Driver:
                 else:
                     self.direction = self.directionList[0]
 
-            # TODO : Check for collisions
             elif (instruction == Constants.Instructions.MOVE_FORWARD.value):
                 curr_x = self.position[0]
                 curr_y = self.position[1]
                 """
-                self.directionList = [Constants.Directions.R_NORTH, Constants.Directions.R_EAST, Constants.Directions.R_SOUTH,
-                              Constants.Directions.R_WEST]
+                self.directionList = [Constants.Directions.R_NORTH.value, Constants.Directions.R_EAST.value, Constants.Directions.R_SOUTH.value,
+                              Constants.Directions.R_WEST.value]
                 """
                 if (self.direction == self.directionList[0]):
                     # move upwards
@@ -106,14 +105,6 @@ class Driver:
                 if (self.wumpus_check()):
                     perceptionList.append("@")
 
-            # # check for death condition
-            # if "W" in self.world_map[self.position[1]][self.position[0]]:
-            #     # print("Landed on WUMPUS")
-            #     # TODO check if we want to raise an exception here
-            #     # raise exit error code 1 for unit test purposes
-            #     # any integer from 0-255 should be fine
-            #     # TODO Determine what the different exit codes represent, if anything
-            #     sys.exit(1)
 
             self.current_move_count += 1
 
@@ -206,6 +197,7 @@ class Driver:
                 print("Found confounded")
                 # stepped on portal
                 confounded = "on"
+                # TODO reset coordinates to random point
             elif (perception == "B"):
                 # bumped into wall
                 bump = "on"
