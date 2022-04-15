@@ -23,9 +23,10 @@ class Driver:
         self.coins += 1
         return
 
-    def move(self, instructionList):
+    def move(self, instructionList) -> list:
 
         perceptionList = []
+        FinalListOfPerceptionStrings = []
 
         for instruction in instructionList:
 
@@ -105,30 +106,38 @@ class Driver:
                 if (self.wumpus_check()):
                     perceptionList.append("@")
 
-            # check for death condition
-            if "W" in self.world_map[self.position[1]][self.position[0]]:
-                # print("Landed on WUMPUS")
-                # TODO check if we want to raise an exception here
-                # raise exit error code 1 for unit test purposes
-                # any integer from 0-255 should be fine
-                # TODO Determine what the different exit codes represent, if anything
-                sys.exit(1)
+            # # check for death condition
+            # if "W" in self.world_map[self.position[1]][self.position[0]]:
+            #     # print("Landed on WUMPUS")
+            #     # TODO check if we want to raise an exception here
+            #     # raise exit error code 1 for unit test purposes
+            #     # any integer from 0-255 should be fine
+            #     # TODO Determine what the different exit codes represent, if anything
+            #     sys.exit(1)
 
             self.current_move_count += 1
 
-        curr_x = self.position[0]
-        curr_y = self.position[1]
+            curr_x = self.position[0]
+            curr_y = self.position[1]
 
-        self.world_map[curr_y][curr_x] += "-"
+            self.world_map[curr_y][curr_x] += "-"
+            # self.print_map()
+            self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("-", "")
+
+            # check final position for percepts
+            self.percepts = self.world_map[curr_y][curr_x]
+            for perception in perceptionList:
+                self.percepts += perception
+
+            IndividualMovePerceptionList = self.perception_builder()
+            FinalListOfPerceptionStrings.append(IndividualMovePerceptionList)
+
+        # built_perception = self.perception_builder()
+
+        self.world_map[self.position[0]][self.position[1]] += "-"
         self.print_map()
-        self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("-", "")
-
-        # check final position for percepts
-        self.percepts = self.world_map[curr_y][curr_x]
-        for perception in perceptionList:
-            self.percepts += perception
-        built_perception = self.perception_builder()
-        return built_perception
+        self.world_map[self.position[0]][self.position[1]] = self.world_map[self.position[0]][self.position[1]].replace("-", "")
+        return FinalListOfPerceptionStrings
 
     def wall_check(self, position):
         x, y = position[0], position[1]
@@ -203,6 +212,9 @@ class Driver:
             elif (perception == "@"):
                 # scream heard
                 scream = "on"
+            elif (perception == "W"):
+                # death condition
+                sys.exit(1)
         result = confounded +  "," +  stench  + "," + tingle  + "," +  glitter  + "," +  bump  + "," +  scream
         return result
 

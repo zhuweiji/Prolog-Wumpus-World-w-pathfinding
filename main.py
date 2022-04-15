@@ -27,16 +27,19 @@ if (__name__ == "__main__"):
             print(f"Suggested Move List : {move_list}")
 
         # print(move_list)
-        build_perception = d.move(move_list)
-        # print(f"Executed Move List : {move_list}")
-        # print(f"Driver Position : {d.position}")
+        CompoundListOfPerceptionStrings = d.move(move_list)
+        # print("Built Perception: " , end = "\t")
+        # print(build_perception)
 
-        instruction = f"move({move_list},{build_perception})"
-        print(f"Agent Instruction:\t {instruction}")
+        print(f"Executed Move List : {move_list}")
+        print(f"Driver Position : {d.position}")
 
-        result = list(prolog.query(instruction))
-        # print(f"Result : {result}")
-        print()
+        for i in range (0, len(move_list)):
+            instruction = f"move({move_list[i]},{CompoundListOfPerceptionStrings[i]})"
+            print(f"Agent Instruction:\t {instruction}")
+            result = list(prolog.query(instruction))
+            # print(f"Result : {result}")
+            print()
 
-        # time.sleep(0.1)
+        time.sleep(0.1)
 

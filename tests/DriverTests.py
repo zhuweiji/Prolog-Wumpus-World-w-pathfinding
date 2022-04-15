@@ -39,7 +39,7 @@ class DriverTest(unittest.TestCase):
                        Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
                        Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
         perceptionsList = self.d.move(action_list)
-        print(f"Agent Position : {self.d.position}")
+        # print(f"Agent Position : {self.d.position}")
         self.assert_(self.d.position == [0, 5], True)
         # TODO assert the correct on inside perceptionlist instead of 'B'
         # self.assert_('B' in perceptionsList, True)
@@ -122,7 +122,31 @@ class DriverTest(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 1)
 
+    # Test whether single move gives list of 1 perception string
+    # Each string in the following format : on/off, on/off, on/off, on/off, on/off, on/off
+    def testSingleSuggestedMove(self):
+        action_list = [Instructions.MOVE_FORWARD.value]
+        SinglePerception = self.d.move(action_list)
+        # print(SinglePerception)
+        self.assertEqual(len(SinglePerception), len(action_list))
 
+    # Test whether multiple moves gives list of perception strings
+    # Each string in the following format : on/off, on/off, on/off, on/off, on/off, on/off
+    def testMultipleSuggestedMove(self):
+        action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
+        CompoundPerceptions = self.d.move(action_list)
+        # print(CompoundPerceptions)
+        self.assertEqual(len(CompoundPerceptions), len(action_list))
+
+    # Test correctness of compound move list
+    def testCorrectnessOfMultipleSuggestedMoves(self):
+        # This set of actions must lead to the shoot and successful death of a wumpus
+        action_list = [Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value,
+                       Instructions.MOVE_FORWARD.value, Instructions.SHOOT.value]
+        CompoundPerceptions = self.d.move(action_list)
+        # print(CompoundPerceptions)
+        # detect scream
+        self.assertEqual(CompoundPerceptions[-1], "off,off,off,off,off,on")
 
 if (__name__ == "__main__"):
     unittest.main()
