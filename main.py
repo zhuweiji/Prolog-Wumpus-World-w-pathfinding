@@ -10,7 +10,12 @@ if (__name__ == "__main__"):
 
     position = [0, 0]
     direction = Directions.R_NORTH.value
-    world_map = map_generator("map.pl")
+
+    wumpus_coords = [[4, 2]]
+    gold_coords = [[0, 0]]
+    portal_coords = [[0, 5]]
+    world_map = map_generator(wumpus_coords=wumpus_coords, gold_coords=gold_coords, portal_coords=portal_coords)
+
     d = Driver.Driver(position, direction, world_map)
 
 
