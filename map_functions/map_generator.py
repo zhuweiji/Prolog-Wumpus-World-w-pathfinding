@@ -2,7 +2,7 @@ from helpers import config
 from pyswip import Prolog
 
 
-def generate_surrounding_indicators(item_coords):    
+def generate_surrounding_indicators(item_coords:list) -> list:
     max_x, max_y = config.MAP_SIZE
     item_indicator_coords = []
 
@@ -60,7 +60,7 @@ def generate_surrounding_indicators(item_coords):
         
     return item_indicator_coords
 
-def map_generator(filePath):
+def map_generator_legacy(filePath):
     prolog = Prolog()
     prolog.consult(filePath)
 
@@ -112,3 +112,45 @@ def map_generator(filePath):
 
     return world_map
 
+def map_generator(wumpus_coords=None, gold_coords:list = None, portal_coords:list = None) -> list:
+    if wumpus_coords is None:
+        wumpus_coords = []
+    if gold_coords is None:
+        gold_coords = []
+    if portal_coords is None:
+        portal_coords = []
+
+    x,y = config.MAP_SIZE
+
+    stench_coords = generate_surrounding_indicators(wumpus_coords)
+    tingle_coords = generate_surrounding_indicators(portal_coords)
+
+    world_map = [['','','','','','',''],
+                ['','','','','','',''],
+                ['','','','','','',''],
+                ['','','','','','',''],
+                ['','','','','','',''],
+                ['','','','','','','']]
+
+    for i in range (0, y):
+        for j in range(0, x):
+            coords = [j,i]
+            if coords in wumpus_coords:
+                world_map[i][j] += 'W'
+            if coords in gold_coords:
+                world_map[i][j] += '*'
+            if coords in portal_coords:
+                world_map[i][j] += 'O'
+            if coords in stench_coords:
+                world_map[i][j] += '='
+            if coords in tingle_coords:
+                world_map[i][j] += 'T'
+            if (world_map[i][j] == ''):
+                world_map[i][j] = '.'
+
+    # for i in range (0, len(world_map)):
+    #     for j in range(0, len(world_map[i])):
+    #         print(world_map[i][j], end="\t")
+    #     print()
+
+    return world_map
