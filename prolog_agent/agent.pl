@@ -56,45 +56,47 @@ iscounfounded(false).
 explore(L) :-
     hunter(X,Y,D)
     % find a new safe, unvisited room to go to
-    , findNewRoom(room(X,Y), DestinationRoom),!
+    % , findNewRoom(room(X,Y), DestinationRoom),!
     % find some safe moves to get to that room
     , simFindMovesToRoom([s(room(X,Y), D, [])], DestinationRoom, [], TL, 50),!
+    , write('Destination room: '), write(DestinationRoom), nl
     % every 'move' is [move1,...] so output list is 2-d array. Flatten list for output
     , flatten2(TL, L).
 
-% wraps BFS find room function for better interface, and logs the output
-findNewRoom(room(X,Y), DestinationRoom) :-
-    checkRoomOrAddAdj([room(X,Y)], [], DestinationRoom)
-    , logMessage('Heuristic finds safe room', DestinationRoom)
-   .
+% % wraps BFS find room function for better interface, and logs the output
+% findNewRoom(room(X,Y), DestinationRoom) :-
+%     checkRoomOrAddAdj([room(X,Y)], [], DestinationRoom)
+%     , logMessage('Heuristic finds safe room', DestinationRoom)
+%    .
 
-% look for a safe room recursively, adding adjacent rooms for a BFS search
-checkRoomOrAddAdj([Room|ListOfOtherRooms], CheckedRooms, DestinationRoom) :-
-    (
-        \+ member(Room, CheckedRooms)
-        , append([Room], CheckedRooms, NewCheckedRooms)
-        , (
-            (
-                \+ roomIsDangerous(Room)
-                , room(X,Y) = Room
-                , \+ visited(X,Y)
-                , DestinationRoom = Room
-            )
-            ; (
-                % condition - if list of rooms is within bounds expand its neighbours
-                (withinBounds(Room) -> 
-                    (getAdjacentRooms(Room, L)
-                    , append(L, ListOfOtherRooms, NewListOfOtherRooms)
-                    , sort(NewListOfOtherRooms, UniqueListOfRooms) % sort/2 to filter out duplicate values in list 
-                    ), checkRoomOrAddAdj(UniqueListOfRooms, NewCheckedRooms, DestinationRoom)
+% % look for a safe room recursively, adding adjacent rooms for a BFS search
+% checkRoomOrAddAdj([Room|ListOfOtherRooms], CheckedRooms, DestinationRoom) :-
+%     (
+%         \+ member(Room, CheckedRooms)
+%         , append([Room], CheckedRooms, NewCheckedRooms)
+%         , (
+%             (
+%                 \+ roomIsDangerous(Room)
+%                 , room(X,Y) = Room
+%                 , \+ visited(X,Y)
+%                 , DestinationRoom = Room
+%             )
+%             ; (
+%                 % condition - if list of rooms is within bounds expand its neighbours
+%                 (withinBounds(Room) -> 
+%                     (getAdjacentRooms(Room, L)
+%                     , append(ListOfOtherRooms, L, NewListOfOtherRooms)
+%                     , remove_duplicates(NewListOfOtherRooms, UniqueListOfRooms)
+%                     , write(UniqueListOfRooms), nl
+%                     ), checkRoomOrAddAdj(UniqueListOfRooms, NewCheckedRooms, DestinationRoom)
                 
-                % just recurse
-                ) ; checkRoomOrAddAdj(ListOfOtherRooms, NewCheckedRooms, DestinationRoom)
-            )
-        )
-    )
-    ; checkRoomOrAddAdj(ListOfOtherRooms, CheckedRooms, DestinationRoom)
-    .
+%                 % just recurse
+%                 ) ; checkRoomOrAddAdj(ListOfOtherRooms, NewCheckedRooms, DestinationRoom)
+%             )
+%         )
+%     )
+%     ; checkRoomOrAddAdj(ListOfOtherRooms, CheckedRooms, DestinationRoom)
+%     .
 
 roomIsDangerous(room(X,Y)) :-
     possibleWumpus(X, Y)
@@ -105,24 +107,24 @@ roomIsDangerous(room(X,Y)) :-
 % BFS search for safe moves to a given room from a starting room
 simFindMovesToRoom([s(CurrRoom, CurrDir, Moves)|StateTail], EndRoom, CheckedRooms, OutputMoves, Iterations) :-
 %     % if current room is destination room, terminate
-    (CurrRoom = EndRoom,!, Moves=OutputMoves)
+    (CurrRoom = EndRoom, room(EX,EY)=EndRoom, \+visited(EX,EY),!, Moves=OutputMoves)
     ;(Iterations = 0)
     ; (
         I0 is Iterations-1,
         append([CurrRoom], CheckedRooms, NewCheckedRooms)
         % find all moves that can be made from this room to another room
         , findall(
-            s(NextRoom, NextDir, [Move|Moves]),
+            s(NextRoom, NextDir, [Moves|Move]),
             simMakeMove(CurrRoom,CurrDir,NextRoom,NextDir, Move),
             States
         )
-        % filter forward moves to rooms which have already been explored
+        % remove forward rooms to rooms which have already been explored
         , findall(State,
             (member(State, States)
             ,\+isInCheckedRoom(State, NewCheckedRooms)
             ),
             NewStates)        
-
+        % , write(NewStates),nl
         , append(StateTail, NewStates, NewStateTail)
         , simFindMovesToRoom(NewStateTail, EndRoom, NewCheckedRooms, OutputMoves, I0)
     )
@@ -241,6 +243,12 @@ hunterActualPickup:-
 
 % PART THREE - Use the percepts gained from the move to update the knowledge base
 
+f(L) :-
+    move(moveforward,off,off,off,off,off,off)
+    , move(moveforward,off,off,off,off,off,off)
+    , move(moveforward,off,off,on,off,off,off)
+    , explore(L).
+
 % Update agent knowledge of the world with the percepts it is given
 usePrecepts(room(X,Y), Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
     (Confounded=on -> reborn                 ; true 
@@ -267,17 +275,19 @@ setAllSurroundingRoomsAsSafe([room(X,Y)|T]) :-
     % assertz(safe(X,Y)), setAllSurroundingRoomsAsSafe(T).
 
 
+verifyInformationInAdjRooms(_, []).
 verifyInformationInAdjRooms(room(X,Y), AdjRooms) :-
-    [AdjRoom|AdjRoomsTail] = AdjRooms
-    , verifyPossibleWumpus(room(X,Y), AdjRoom)
-    , verifyPossibleConfundus(room(X,Y), AdjRoom)
-    , (AdjRoomsTail = [], verifyInformationInAdjRooms(room(X,Y), AdjRoomsTail)) ; true.
+    [AdjRoom|AdjRoomsTail] = AdjRooms,!
+    , verifyPossibleWumpus(room(X,Y), AdjRoom),!
+    , verifyPossibleConfundus(room(X,Y), AdjRoom),!
+    , verifyInformationInAdjRooms(room(X,Y), AdjRoomsTail)
+    .
 
 % add fact that stench is at square, and note possible wumpus locations
 addStenchKnowledge(room(X,Y)) :- 
     assertz(stench(X,Y))
     , getAdjacentRooms(room(X,Y), AdjRooms)
-    , addPossibleWumpus(AdjRooms).
+    ,!, addPossibleWumpus(AdjRooms).
 
 % iterate over list of rooms - if room has not been visited then add a marker that Wumpus may be there
 addPossibleWumpus([]).
@@ -285,13 +295,15 @@ addPossibleWumpus([room(X,Y)|AdjRoomsTail]) :-
     (
         ( \+ visited(X,Y), assertz(possibleWumpus(X,Y)) ) ; true
     )
-    , addPossibleWumpus(AdjRoomsTail),!
+    ,!, addPossibleWumpus(AdjRoomsTail),!
     .
 verifyPossibleWumpus(room(OX,OY), room(AX, AY)) :-
     (
         possibleWumpus(AX, AY) ->
-        (\+ stench(OX,OY) -> retractall(possibleWumpus(AX, AY)), logMessage('Removed possibility | Wumpus not in ', [AX, AY]))
-        ; true
+        (\+ stench(OX,OY) -> 
+            (retractall(possibleWumpus(AX, AY))
+            , logMessage('Removed possibility | Wumpus not in ', [AX, AY])) ;true
+            ); true
     )
     .
 
@@ -299,19 +311,22 @@ verifyPossibleWumpus(room(OX,OY), room(AX, AY)) :-
 addTingleKnowledge(room(X,Y)) :- 
     assertz(tingle(X,Y))
     , getAdjacentRooms(room(X,Y), AdjRooms)
-    , addPossibleConfundus(AdjRooms).
+    ,!, addPossibleConfundus(AdjRooms).
 % iterate over list of rooms - if room has not been visited then add a marker that portal may be there
 addPossibleConfundus([room(X,Y)|AdjRoomsTail]) :-
     (
         ( \+ visited(X,Y), assertz(possibleConfundus(X,Y)) ) ; true
     )
-    , addPossibleConfundus(AdjRoomsTail),!
+    ,!, addPossibleConfundus(AdjRoomsTail),!
     .
 verifyPossibleConfundus(room(OX,OY), room(CX, CY)) :-
     (
         possibleConfundus(CX,CY) -> 
-        (\+ tingle(OX,OY) -> retractall(possibleConfundus(CX, CY)), logMessage('Removed possibility | Confundus not in room', [CX, CY]))
-        ; true
+        (\+ tingle(OX,OY) ->
+            (retractall(possibleConfundus(CX, CY))
+            , logMessage('Removed possibility | Confundus not in room', [CX, CY])
+        ); true
+        ); true
     )
     .
 
@@ -427,4 +442,11 @@ logMessage(Message) :-
 
 logMessage(Message, Vars) :-
     nl, write('Agent: '), format('~w - ~w', [Message, Vars]), nl.
+
+remove_duplicates([], []).
+remove_duplicates([Head | Tail], Result) :-
+    member(Head, Tail), !,
+    remove_duplicates(Tail, Result).
+remove_duplicates([Head | Tail], [Head | Result]) :-
+    remove_duplicates(Tail, Result).
 
