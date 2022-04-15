@@ -53,10 +53,10 @@ class KnownWorld:
         
     def create_map(self):       
         cells = {}
-        for attribute_name, attribute_value in self.__dict__.values():
+        for attribute_name, attribute_value in [(i,j) for i,j in self.__dict__.items() if i != 'prolog_interface']:
             if isinstance(attribute_value, list):
                 for coords in attribute_value:
-                    if coords not in cells: cells[coords] = MapCell(cooords=coords) 
+                    if coords not in cells: cells[coords] = MapCell(coords=coords) 
                     mapcell = cells[coords]
                     if attribute_name == 'visited': mapcell.visited = True
                     if attribute_name == 'stench': mapcell.stench = True
@@ -67,7 +67,13 @@ class KnownWorld:
                     if attribute_name == 'bump': mapcell.bump = True
                     if attribute_name == 'scream': mapcell.scream = True
                     if attribute_name == 'safe': mapcell.safe = True
-                
+            elif attribute_name == 'agent':
+                coords = attribute_value.coordinates
+                print(f'agent coordinates: {coords}')
+                if coords not in cells: cells[coords] = MapCell(coords=coords) 
+                mapcell = cells[coords]
+                mapcell.agent = attribute_value
+        
         max_x,max_y, min_x, min_y = 0,0,0,0
         for mapcell in cells.values():
             coords = mapcell.coords
@@ -77,10 +83,21 @@ class KnownWorld:
             if coords[1] < min_y: min_y = coords[1]
         
         print(max_x, max_y, min_x, min_y)
-        # map = [[MapCell() for i in range(min_x, max_x+1)] for j in range(min_y, max_y+1)]
-        # map = PrettyMap(map)
-        # print(map.size())
-        # print(map)
+        map = []
+        for yidx in range(min_y, max_y+1):
+            row = []
+            for xidx in range(min_x, max_x+1):
+                coords = (xidx, yidx)
+                if coords in cells:
+                    cell = cells[coords]
+                else:
+                    cell = MapCell()
+                    cells[coords] = MapCell()
+                row.append(cell)
+            map.append(row)
+        
+        return map
+                    
         
     def update_world(self):
         coords, direction = self.query_agent_coords()
@@ -156,8 +173,8 @@ class MapCell:
         elif self.agent: 
             if self.agent.direction == 'rnorth': return '^'
             elif self.agent.direction == 'reast': return '>'
-            elif self.agent.direction == 'rsouth': return '<'
-            elif self.agent.direction == 'rwest': return 'v'
+            elif self.agent.direction == 'rsouth': return 'v'
+            elif self.agent.direction == 'rwest': return '<'
         elif self.safe:
             if self.visited: return 'S'
             else: return 's'
@@ -186,12 +203,19 @@ if __name__ == "__main__":
     # print(moves)
     
     # for move in ['moveforward', 'turnleft','moveforward','moveforward','turnright','moveforward']:
+    i = 0
     for move in ['turnright','moveforward','moveforward','moveforward','moveforward',
     'turnright','moveforward','moveforward','moveforward','moveforward']:
-        # print(move)
-        query_str = f'move({move},off,off,off,off,off,off).'
+        print('-'*50)
+        print(move)
+        i += 1
+        if i % 7 == 0:
+            query_str = f'move({move},off,off,on,off,off,off).'
+        else:
+            query_str = f'move({move},off,off,off,off,off,off).'
         r = kbs.prolog_interface.query(query_str)
         list(r)
         
-    kbs.update_world()
-    print(kbs.create_map())
+        kbs.update_world()
+        for row in kbs.create_map():
+            print(row)
