@@ -84,9 +84,8 @@ class Driver:
                 if not boolean_bump:
                     self.position = new_position
                 else:
-                    print("Bump found")
+                    # print("Bump found")
                     perceptionList.append('B')
-                    break
 
             elif (instruction == Constants.Instructions.PICKUP.value):
                 # sanity check : Check if coin exists
@@ -111,9 +110,9 @@ class Driver:
             curr_x = self.position[0]
             curr_y = self.position[1]
 
-            self.world_map[curr_y][curr_x] += "-"
+            # self.world_map[curr_y][curr_x] += "-"
             # self.print_map()
-            self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("-", "")
+            # self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("-", "")
 
             # check final position for percepts
             self.percepts = self.world_map[curr_y][curr_x]
@@ -125,9 +124,9 @@ class Driver:
 
         # built_perception = self.perception_builder()
 
-        self.world_map[self.position[0]][self.position[1]] += "-"
+        self.world_map[self.position[1]][self.position[0]] += "-"
         self.print_map()
-        self.world_map[self.position[0]][self.position[1]] = self.world_map[self.position[0]][self.position[1]].replace("-", "")
+        self.world_map[self.position[1]][self.position[0]] = self.world_map[self.position[1]][self.position[0]].replace("-", "")
         return FinalListOfPerceptionStrings
 
     def wall_check(self, position):

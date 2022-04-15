@@ -17,15 +17,20 @@ class DriverTest(unittest.TestCase):
     def test_driver(self):
         self.assert_(self.d.position, Directions.R_NORTH.value)
 
+    def test_map_generator(self):
+        map = map_generator("../map.pl")
+        for i in range(0, len(map)):
+            # prints each row
+            print(map[i])
+
     def test_no_movement(self):
         action_list = []
         self.d.move(action_list)
 
     def test_forward_movement(self):
-        action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
-        self.d.move(action_list)
-        print(self.d.position)
-        self.assert_(self.d.position == [0, 3], True)
+            action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
+            self.d.move(action_list)
+            self.assert_(self.d.position == [0, 3], True)
 
     def test_right_movement(self):
         # print(self.d.print_map())
