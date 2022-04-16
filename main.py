@@ -16,7 +16,7 @@ if (__name__ == "__main__"):
     direction = Directions.R_NORTH.value
 
     wumpus_coords = [[4, 2]]
-    gold_coords = [[0, 0]]
+    gold_coords = [[2, 0]]
     portal_coords = [[0, 5]]
     world_map = map_generator(wumpus_coords=wumpus_coords, gold_coords=gold_coords, portal_coords=portal_coords)
 

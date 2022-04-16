@@ -5,11 +5,14 @@
 :- abolish(tingle/2).
 :- abolish(wall/2).
 :- abolish(safe/2).
+:- abolish(glitter/1).
+
 :- abolish(possibleWumpus/2).
 :- abolish(possibleConfundus/2).
 :- abolish(wumpusAlive/1).
 :- abolish(hasarrow/0).
 :- abolish(numGoldCoins/1).
+
 
 :- abolish(justbumped/1).
 :- abolish(justscreamed/1).
@@ -22,6 +25,7 @@
     tingle/2,
     wall/2,
     safe/2,
+    glitter/1,
 
     possibleWumpus/2,
     possibleConfundus/2,
@@ -49,6 +53,7 @@ wumpusAlive(true).
 hasarrow.
 numGoldCoins(0).
 iscounfounded(false).
+glitter(false).
 
 justbumped(false).
 justscreamed(false).
@@ -115,7 +120,8 @@ roomIsDangerous(room(X,Y)) :-
 % BFS search for safe moves to a given room from a starting room
 simFindMovesToRoom([s(CurrRoom, CurrDir, Moves)|StateTail], EndRoom, CheckedRooms, OutputMoves, Iterations) :-
 %     % if current room is destination room, terminate
-    (CurrRoom = EndRoom, room(EX,EY)=EndRoom, \+visited(EX,EY),!, Moves=OutputMoves)
+    ( CurrRoom = EndRoom, room(EX,EY)=EndRoom, \+visited(EX,EY),!, 
+        (glitter(true) -> (logMessage('Picked up gold'), OutputMoves=[pickup|Moves]); Moves=OutputMoves))
     ;(Iterations = 0)
     ; (
         I0 is Iterations-1,
@@ -250,22 +256,26 @@ hunterActualPickup:-
     addGoldCoin.
 
 % PART THREE - Use the percepts gained from the move to update the knowledge base
-
-f(L) :-
-    move(moveforward,off,off,off,off,off,off)
-    , move(moveforward,off,off,off,off,off,off)
-    , move(moveforward,off,off,on,off,off,off)
-    , explore(L).
+% f(L) :-
+%     move(moveforward,off,off,off,off,off,off)
+%     , move(moveforward,off,off,off,off,off,off)
+%     , move(moveforward,off,off,on,off,off,off)
+%     , explore(L).
 
 % Update agent knowledge of the world with the percepts it is given
 usePrecepts(room(X,Y), Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
     (Confounded=on -> reborn                 ; true 
     , Stench=on -> addStenchKnowledge(room(X,Y)) ; true
     , Tingle=on -> addTingleKnowledge(room(X,Y)) ; true
-    , Glitter=on -> pickup                   ; true
+    , Glitter=on -> addGoldKnowledge         ; true
     , Bump=on -> addWallKnowledge            ; true
     , Scream=on -> updateWumpusKilled        ; true
     ); true
+    .
+
+addGoldKnowledge:-
+    retractall(glitter(false))
+    , assertz(glitter(true))
     .
 
 % when moving in a new cell, the knowledge that some percepts are not detected is information in itself
@@ -351,7 +361,9 @@ addGoldCoin :-
     numGoldCoins(X),
     X1 is X+1,
     retractall(numGoldCoins(_)),
-    assertz(numGoldCoins(X1)).
+    assertz(numGoldCoins(X1)),
+    retractall(glitter(true)),
+    assertz(glitter(false)).
 
 updateWumpusKilled :- 
     retractall(wumpusAlive(_))
@@ -375,7 +387,15 @@ turnleft(D0, D1) :-
 turnright(D0, D1) :-
     rightof(D0,D1).
 
-pickup :- true.
+pickup :- 
+    numGoldCoins(I)
+    ,I0 is I+1
+    , retractall(numGoldCoins(_))
+    , assertz(numGoldCoins(I0))
+    , retractall(glitter(true))
+    , assertz(glitter(false))
+
+    .
 shoot :- true.
 
     
