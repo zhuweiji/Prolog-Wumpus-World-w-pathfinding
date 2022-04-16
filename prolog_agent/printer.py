@@ -1,11 +1,25 @@
 
 from dataclasses import dataclass, field
+import re
 from pyswip import Prolog
 import itertools
+import os 
+os.system("")
 
 AXIS_SPACING = 3
 
-
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    
+    
 class KBSPrinterException(Exception): pass
 
 
@@ -27,6 +41,18 @@ class PrettyMap:
     
     def prettyprint(self):
         prettify = lambda row: str(row).replace(',','').replace(']','').replace('[','').replace("'", '').replace('"','')
+
+        def print_person_in_color(string):
+            person = next((i for i in ['>','<','^','v'] if i in string), None)
+            if person:
+                split_strs = string.split(person)
+                print(split_strs[0],end='')
+                print(bcolors.OKGREEN + person +bcolors.ENDC, end='')
+                print(split_strs[1])
+            else:
+                print(string)
+                
+        
         for row in self._map[::-1]:
             first_row = prettify([cell.row_1() for cell in row])
             middle_row = prettify([cell.row_2() for cell in row])
@@ -34,8 +60,10 @@ class PrettyMap:
             
             y_coords = row[0].coords[1]
             spacing_req = AXIS_SPACING - len(str(y_coords))-1
+            
+            
             print(f"{' '*AXIS_SPACING}| {first_row}")
-            print(f"{y_coords} {' '*spacing_req}| {middle_row}")
+            print_person_in_color(f"{y_coords} {' '*spacing_req}| {middle_row}")
             print(f"{' '*AXIS_SPACING}| {third_row}")
             print()
             
@@ -52,9 +80,9 @@ class KnownWorld:
     possibleWumpus:    list = field(default_factory=list)
     possibleConfundus: list = field(default_factory=list)
     bump:              list = field(default_factory=list)
-    scream:            list = field(default_factory=list)
-    safe:              list = field(default_factory=list)
     
+    scream:            bool = False
+    safe:              bool = False
     wumpusAlive:       bool = True
     hasarrow:          bool = True
     numGoldCoins:      int  = 0
@@ -81,8 +109,6 @@ class KnownWorld:
                     if attribute_name == 'wall': mapcell.wall = True
                     if attribute_name == 'possibleWumpus': mapcell.wumpus = True
                     if attribute_name == 'possibleConfundus': mapcell.portal = True
-                    if attribute_name == 'bump': mapcell.bump = True
-                    if attribute_name == 'scream': mapcell.scream = True
                     if attribute_name == 'safe': mapcell.safe = True
             
             elif attribute_name == 'agent':
@@ -91,6 +117,11 @@ class KnownWorld:
                 if coords not in cells: cells[coords] = MapCell(coords=coords) 
                 mapcell = cells[coords]
                 mapcell.agent_direction = attribute_value.direction
+        
+        if self.__dict__['bump']: 
+            for cell in cells.values(): cell.bump = True
+        if self.__dict__['scream']: 
+            for cell in cells.values(): cell.scream = True
         
         max_x,max_y, min_x, min_y = 0,0,0,0
         for mapcell in cells.values():
@@ -133,6 +164,9 @@ class KnownWorld:
         
         self.wumpusAlive = self.query_bool('wumpusAlive')
         self.hasarrow = self.query_bool('hasarrow')
+        self.bump = self.query_bool('justbumped')
+        self.scream = self.query_bool('justscreamed')
+        
         # self.numGoldCoins = self.query_bool('numGoldCoins')
         
     def restart_world(self):
@@ -191,22 +225,26 @@ class MapCell:
         elif self.wumpus: return 'W'
         elif self.portal: return 'O'
         elif self.agent_direction: 
-            if self.agent_direction == 'rnorth': return '^'
-            elif self.agent_direction == 'reast': return '>'
+            if self.agent_direction == 'rnorth':   return '^'
+            elif self.agent_direction == 'reast':  return  '>'
             elif self.agent_direction == 'rsouth': return 'v'
-            elif self.agent_direction == 'rwest': return '<'
+            elif self.agent_direction == 'rwest':  return  '<'
         elif self.safe:
             if self.visited: return 'S'
             else: return 's'
         else: return '?'
         
     def row_1(self):
+        if self.wall: return "###"
         return f"{self.confounded_repr()}{self.stench_repr()}{self.tingle_repr()}"
     
     def row_2(self):
+        if self.wall: return "###"
         return f"{self.NPC_repr()}{self.middle_cell()}{self.NPC_repr()}"
         
+        
     def row_3(self):
+        if self.wall: return "###"
         return f"{self.glitter_repr()}{self.bump_repr()}{self.scream_repr()}"
         
     def __str__(self):
