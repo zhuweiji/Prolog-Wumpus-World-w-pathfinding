@@ -1,7 +1,7 @@
 
 from dataclasses import dataclass, field
-from importlib.machinery import BuiltinImporter
 from pyswip import Prolog
+import itertools
 
 AXIS_SPACING = 3
 
@@ -20,17 +20,25 @@ class PrologAgent:
     
 @dataclass 
 class PrettyMap:
-    cells: list
+    _map: list
     
     def size(self):
-        return len(self.cells[0]), len(self.cells)
+        return len(self._map[0]), len(self._map)
     
-    def __str__(self) -> str:
-        for row in self.cells:
-            for cell in row:
-                print(cell, end = "")
+    def prettyprint(self):
+        prettify = lambda row: str(row).replace(',','').replace(']','').replace('[','').replace("'", '').replace('"','')
+        for row in self._map[::-1]:
+            first_row = prettify([cell.row_1() for cell in row])
+            middle_row = prettify([cell.row_2() for cell in row])
+            third_row = prettify([cell.row_3() for cell in row])
+            
+            y_coords = row[0].coords[1]
+            spacing_req = AXIS_SPACING - len(str(y_coords))-1
+            print(f"{' '*AXIS_SPACING}| {first_row}")
+            print(f"{y_coords} {' '*spacing_req}| {middle_row}")
+            print(f"{' '*AXIS_SPACING}| {third_row}")
             print()
-        return ''
+            
     
 @dataclass
 class KnownWorld:
@@ -55,12 +63,10 @@ class KnownWorld:
         assert self.prolog_interface.query('printHunter.'), "Prolog interface to KBS printer not available"
         
     def print_map(self):
-        map = self.create_map()
-        for row in map[::-1]:
-            nrow = str(row).replace(',','').replace(']','').replace('[','')
-            y_coords = row[0].coords[1]
-            spacing_req = AXIS_SPACING - len(str(y_coords))
-            print(f"{y_coords} {' '*spacing_req}| {nrow}")
+        rel_map = self.create_map()
+        map = PrettyMap(rel_map)
+        
+        map.prettyprint()
         
     def create_map(self):       
         cells = {}
@@ -78,12 +84,13 @@ class KnownWorld:
                     if attribute_name == 'bump': mapcell.bump = True
                     if attribute_name == 'scream': mapcell.scream = True
                     if attribute_name == 'safe': mapcell.safe = True
+            
             elif attribute_name == 'agent':
                 coords = attribute_value.coordinates
                 print(f'agent coordinates: {coords}')
                 if coords not in cells: cells[coords] = MapCell(coords=coords) 
                 mapcell = cells[coords]
-                mapcell.agent = attribute_value
+                mapcell.agent_direction = attribute_value.direction
         
         max_x,max_y, min_x, min_y = 0,0,0,0
         for mapcell in cells.values():
@@ -157,19 +164,19 @@ class KnownWorld:
     
 @dataclass
 class MapCell:
-    coords:     tuple    = None
-    agent:      PrologAgent = None
-    confounded: bool    = False
-    visited:    bool    = False
-    stench:     bool    = False
-    tingle:     bool    = False
-    wall:       bool    = False
-    glitter:    bool    = False
-    wumpus:     bool    = False
-    portal:     bool    = False
-    bump:       bool    = False
-    scream:     bool    = False
-    safe:       bool    = False
+    coords:               tuple    = None
+    agent_direction:      str = ''
+    confounded:           bool    = False
+    visited:              bool    = False
+    stench:               bool    = False
+    tingle:               bool    = False
+    wall:                 bool    = False
+    glitter:              bool    = False
+    wumpus:               bool    = False
+    portal:               bool    = False
+    bump:                 bool    = False
+    scream:               bool    = False
+    safe:                 bool    = False
 
     def confounded_repr(self):return '%' if self.confounded else '.'
     def stench_repr(self): return '=' if self.stench else '.'
@@ -183,20 +190,27 @@ class MapCell:
         if self.portal and self.wumpus: return 'U'
         elif self.wumpus: return 'W'
         elif self.portal: return 'O'
-        elif self.agent: 
-            if self.agent.direction == 'rnorth': return '^'
-            elif self.agent.direction == 'reast': return '>'
-            elif self.agent.direction == 'rsouth': return 'v'
-            elif self.agent.direction == 'rwest': return '<'
+        elif self.agent_direction: 
+            if self.agent_direction == 'rnorth': return '^'
+            elif self.agent_direction == 'reast': return '>'
+            elif self.agent_direction == 'rsouth': return 'v'
+            elif self.agent_direction == 'rwest': return '<'
         elif self.safe:
             if self.visited: return 'S'
             else: return 's'
         else: return '?'
         
+    def row_1(self):
+        return f"{self.confounded_repr()}{self.stench_repr()}{self.tingle_repr()}"
+    
+    def row_2(self):
+        return f"{self.NPC_repr()}{self.middle_cell()}{self.NPC_repr()}"
+        
+    def row_3(self):
+        return f"{self.glitter_repr()}{self.bump_repr()}{self.scream_repr()}"
+        
     def __str__(self):
-        return f"{self.confounded_repr()}{self.stench_repr()}{self.tingle_repr()}\
-{self.NPC_repr()}{self.middle_cell()}{self.NPC_repr()}\
-{self.glitter_repr()}{self.bump_repr()}{self.scream_repr()}|"
+        return f"{self.row_1()} {self.row_2()} {self.row_3()}"
 
     def __repr__(self):
         return self.__str__()
@@ -207,14 +221,10 @@ if __name__ == "__main__":
     pl.consult('prolog_agent/agent.pl')
     kbs = KnownWorld(prolog_interface=pl)
     
-    # r = kbs.prolog_interface.query('explore(L).')
-    # moves = list(r)[0]['L']
-    # print(moves)
-    
-    # for move in ['moveforward', 'turnleft','moveforward','moveforward','turnright','moveforward']:
     i = 0
-    for move in ['turnright','moveforward','moveforward','moveforward','moveforward',
-    'turnright','moveforward','moveforward','moveforward','moveforward']:
+    # for move in ['turnright','moveforward','moveforward','moveforward','moveforward',
+    # 'turnright','moveforward','moveforward','moveforward','moveforward']:
+    for move in ['turnleft','moveforward']:
         print('-'*50)
         print(move)
         i += 1

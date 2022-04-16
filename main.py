@@ -4,10 +4,14 @@ from helpers.Constants import *
 from map_functions.map_generator import map_generator
 import time
 
+from prolog_agent import printer
+
 if (__name__ == "__main__"):
     prolog = Prolog()
     prolog.consult("prolog_agent/agent.pl")
 
+    KBS = printer.KnownWorld(prolog_interface=prolog)
+    
     position = [0, 0]
     direction = Directions.R_NORTH.value
 
@@ -23,11 +27,9 @@ if (__name__ == "__main__"):
         move_list = []
 
         for soln in prolog.query("explore(L)"):
-            # print(type(soln["L"][-1]))
-            # print(type(soln["L"][0]))
             endIndex = len(soln["L"]) - 1
             move_list = soln["L"][0:endIndex]
-            print(soln["L"])
+            # print(soln["L"])
             if (type(soln["L"][-1]) == str):
                 move_list.append(soln["L"][-1])
             # print(f"Suggested Move List : {move_list}")
@@ -55,3 +57,7 @@ if (__name__ == "__main__"):
             # print(f"Agent Instruction:\t {instruction}")
             result = list(prolog.query(instruction))
             # print(f"Result : {result}")
+            
+        KBS.update_world()
+        KBS.print_map()
+        # time.sleep(0.5)
