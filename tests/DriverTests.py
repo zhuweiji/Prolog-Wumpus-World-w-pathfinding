@@ -33,13 +33,13 @@ class DriverTest(unittest.TestCase):
 
     def test_right_movement(self):
         # print(self.d.print_map())
-        action_list = [Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
+        action_list = [Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
         self.d.move(action_list)
-        # print(self.d.position)
+        print(self.d.position)
         self.assert_(self.d.position == [2, 0], True)
 
     def test_bump_movement(self):
-        action_list = [Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value]
+        action_list = [Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value]
         perceptionList = self.d.move(action_list)
         perceptionList = perceptionList[-1].split(',')
         print(perceptionList)
@@ -70,16 +70,16 @@ class DriverTest(unittest.TestCase):
 
     # Unit Tests for Wumpus Shooting
     def test_north_wumpus_destruction(self):
-        action_list = [Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_RIGHT.value, Instructions.SHOOT.value]
+        action_list = [Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
+                       Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value, Instructions.SHOOT.value]
         perceptionList = self.d.move(action_list)
         perceptionList = perceptionList[-1].split(',')
         self.assert_(perceptionList[-1]=="on")
 
     def test_north_wumpus_destruction_fail(self):
-        action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value,
+        action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_RIGHT.value,
                        Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.TURN_RIGHT.value, Instructions.SHOOT.value]
+                       Instructions.TURN_LEFT.value, Instructions.SHOOT.value]
         self.d.move(action_list)
         perceptionList = self.d.move(action_list)
         perceptionList = perceptionList[-1].split(',')
@@ -87,23 +87,23 @@ class DriverTest(unittest.TestCase):
 
     def test_south_wumpus_destruction(self):
         action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value, Instructions.SHOOT.value]
+                       Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
+                       Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_RIGHT.value, Instructions.SHOOT.value]
         perceptionList = self.d.move(action_list)
         perceptionList = perceptionList[-1].split(',')
         self.assert_(perceptionList[-1]=="on")
 
     def test_east_wumpus_destruction(self):
-        action_list = [Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
+        action_list = [Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
                        Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.MOVE_FORWARD.value, Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.SHOOT.value]
+                       Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
+                       Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.SHOOT.value]
         perceptionList = self.d.move(action_list)
         perceptionList = perceptionList[-1].split(',')
         self.assert_(perceptionList[-1]=="on")
 
     def test_west_wumpus_destruction(self):
-        action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value,
+        action_list = [Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_RIGHT.value,
                        Instructions.MOVE_FORWARD.value, Instructions.SHOOT.value]
         perceptionList = self.d.move(action_list)
         perceptionList = perceptionList[-1].split(',')
@@ -117,8 +117,8 @@ class DriverTest(unittest.TestCase):
     """
 
     def test_step_on_wumpus(self):
-        action_list = [Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.MOVE_FORWARD.value, Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
+        action_list = [Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
+                       Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value]
         with self.assertRaises(SystemExit) as cm:
             self.d.move(action_list)
         self.assertEqual(cm.exception.code, 1)
@@ -126,7 +126,7 @@ class DriverTest(unittest.TestCase):
 
     # Test Maximum move count
     def test_max_moves(self):
-        action_list = [Instructions.TURN_LEFT.value]
+        action_list = [Instructions.TURN_RIGHT.value]
         with self.assertRaises(SystemExit) as cm:
             for i in range (0,52):
                 self.d.move(action_list)
@@ -152,8 +152,8 @@ class DriverTest(unittest.TestCase):
     # Test correctness of compound move list
     def testCorrectnessOfMultipleSuggestedMoves(self):
         # This set of actions must lead to the shoot and successful death of a wumpus
-        action_list = [Instructions.TURN_LEFT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
-                       Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_RIGHT.value,
+        action_list = [Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,
+                       Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value, Instructions.TURN_LEFT.value,
                        Instructions.SHOOT.value]
         CompoundPerceptions = self.d.move(action_list)
         # print(CompoundPerceptions)
