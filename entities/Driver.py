@@ -6,8 +6,8 @@ class Driver:
     def __init__(self, position, direction, world_map) -> None:
         self.position = position
         self.direction = direction
-        self.directionList = [Constants.Directions.R_NORTH.value, Constants.Directions.R_EAST.value, Constants.Directions.R_SOUTH.value,
-                              Constants.Directions.R_WEST.value]
+        # self.directionList = [Constants.Directions.R_NORTH.value, Constants.Directions.R_EAST.value, Constants.Directions.R_SOUTH.value,
+        #                       Constants.Directions.R_WEST.value]
         self.world_map = world_map
         self.coins = 0
         self.arrow = 1
@@ -38,24 +38,24 @@ class Driver:
                 self.directionList = [Constants.Directions.R_NORTH, Constants.Directions.R_EAST, Constants.Directions.R_SOUTH,
                               Constants.Directions.R_WEST]
                 """
-                if (self.direction == self.directionList[0]):
-                    self.direction = self.directionList[3]
-                elif (self.direction == self.directionList[1]):
-                    self.direction = self.directionList[0]
-                elif (self.direction == self.directionList[2]):
-                    self.direction = self.directionList[1]
+                if (self.direction == Constants.Directions.R_NORTH.value):
+                    self.direction = Constants.Directions.R_WEST.value
+                elif (self.direction == Constants.Directions.R_WEST.value):
+                    self.direction = Constants.Directions.R_SOUTH.value
+                elif (self.direction == Constants.Directions.R_SOUTH.value):
+                    self.direction = Constants.Directions.R_EAST.value
                 else:
-                    self.direction = self.directionList[2]
+                    self.direction = Constants.Directions.R_NORTH.value
 
             elif (instruction == Constants.Instructions.TURN_RIGHT.value):
-                if (self.direction == self.directionList[0]):
-                    self.direction = self.directionList[1]
-                elif (self.direction == self.directionList[1]):
-                    self.direction = self.directionList[2]
-                elif (self.direction == self.directionList[2]):
-                    self.direction = self.directionList[3]
+                if (self.direction == Constants.Directions.R_NORTH.value):
+                    self.direction = Constants.Directions.R_EAST.value
+                elif (self.direction == Constants.Directions.R_EAST.value):
+                    self.direction = Constants.Directions.R_SOUTH.value
+                elif (self.direction == Constants.Directions.R_SOUTH.value):
+                    self.direction = Constants.Directions.R_WEST.value
                 else:
-                    self.direction = self.directionList[0]
+                    self.direction = Constants.Directions.R_NORTH.value
 
             elif (instruction == Constants.Instructions.MOVE_FORWARD.value):
                 curr_x = self.position[0]
@@ -64,18 +64,18 @@ class Driver:
                 self.directionList = [Constants.Directions.R_NORTH.value, Constants.Directions.R_EAST.value, Constants.Directions.R_SOUTH.value,
                               Constants.Directions.R_WEST.value]
                 """
-                if (self.direction == self.directionList[0]):
+                if (self.direction == Constants.Directions.R_NORTH.value):
                     # move upwards
                     new_position = [curr_x, curr_y + 1]
-                elif (self.direction == self.directionList[1]):
+                elif (self.direction == Constants.Directions.R_EAST.value):
                     # move right
-                    new_position = [curr_x - 1, curr_y]
-                elif (self.direction == self.directionList[2]):
+                    new_position = [curr_x + 1, curr_y]
+                elif (self.direction == Constants.Directions.R_SOUTH.value):
                     # move downwards
                     new_position = [curr_x, curr_y - 1]
                 else:
                     # move left
-                    new_position = [curr_x + 1, curr_y]
+                    new_position = [curr_x - 1, curr_y]
 
                 # print(f"Current Position : {[curr_x, curr_y]}")
                 # print(f"New Position : {new_position}")
@@ -159,7 +159,7 @@ class Driver:
 
         elif (self.direction == Constants.Directions.R_EAST.value):
             i = self.world_map[current_y]
-            for j in range(0, current_x):
+            for j in range(current_x, max_x):
                 perceptsList = i[j]
                 if "W" in perceptsList:
                     # print("WUMPUS SHOT")
@@ -167,7 +167,7 @@ class Driver:
 
         elif (self.direction == Constants.Directions.R_WEST.value):
             i = self.world_map[current_y]
-            for j in range(current_x + 1, max_x):
+            for j in range(0, current_x + 1):
                 perceptsList = i[j]
                 if "W" in perceptsList:
                     # print("WUMPUS SHOT")
