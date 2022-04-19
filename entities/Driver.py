@@ -133,11 +133,7 @@ class Driver:
             IndividualMovePerceptionList = self.perception_builder()
             FinalListOfPerceptionStrings.append(IndividualMovePerceptionList)
 
-        # built_perception = self.perception_builder()
-
-        self.world_map[self.position[1]][self.position[0]] += "-"
-        # self.print_map()
-        self.world_map[self.position[1]][self.position[0]] = self.world_map[self.position[1]][self.position[0]].replace("-", "")
+        self.print_map()
         return FinalListOfPerceptionStrings
 
     def wall_check(self, position):
@@ -224,10 +220,14 @@ class Driver:
 
     def print_map(self):
         x, y = config.MAP_SIZE
+        self.world_map[self.position[1]][self.position[0]] += "-"
         for i in reversed(range(0, y)):
             for j in range(0, x):
                 print(self.world_map[i][j], end="\t")
             print()
+        self.world_map[self.position[1]][self.position[0]] = self.world_map[self.position[1]][self.position[0]].replace("-", "")
+
+
 
 
 def rightof(direction):
