@@ -81,7 +81,7 @@ explore(L) :-
     , (simFindMovesToRoom([s(room(X,Y), D, [])], DestinationRoom, [], TL, 50)
         -> (logMessage('Destination room: ', DestinationRoom))
         ; (
-            logMessage('Could not find new rooms to explore')
+            logMessage('Could not find new rooms to explore -  Returning to relative origin.')
             , findPathToRelativeOrigin([s(room(X,Y), D, [])], [], TL, 50)
         )
     )
@@ -138,8 +138,7 @@ simFindMovesToRoom([s(CurrRoom, CurrDir, Moves)|StateTail], EndRoom, CheckedRoom
         (glitter(true) -> (logMessage('Picked up gold'), OutputMoves=[pickup|Moves]); Moves=OutputMoves))
     ;(Iterations = 0, false)
     ; (
-        I0 is Iterations-1,
-        append([CurrRoom], CheckedRooms, NewCheckedRooms)
+        I0 is Iterations-1
         % find all moves that can be made from this room to another room
         , findall(
             s(NextRoom, NextDir, [Moves|Move]),
@@ -149,12 +148,14 @@ simFindMovesToRoom([s(CurrRoom, CurrDir, Moves)|StateTail], EndRoom, CheckedRoom
         % remove forward rooms to rooms which have already been explored
         , findall(State,
             (member(State, States)
-            ,\+isInCheckedRoom(State, NewCheckedRooms)
+            ,\+isInCheckedRoom(State, CheckedRooms)
             ),
             NewStates)        
         % , write(NewStates),nl
+        , getRoomsFromState(NewStates, NewCheckedRooms)
+        , append(NewCheckedRooms, CheckedRooms, FinalCheckedRooms)
         , append(StateTail, NewStates, NewStateTail)
-        , simFindMovesToRoom(NewStateTail, EndRoom, NewCheckedRooms, OutputMoves, I0)
+        , simFindMovesToRoom(NewStateTail, EndRoom, FinalCheckedRooms, OutputMoves, I0)
     )
     .
 
@@ -164,9 +165,7 @@ findPathToRelativeOrigin([s(CurrRoom, CurrDir, Moves)|StateTail], CheckedRooms, 
     (CurrRoom = room(0,0),!, retractall(returnToStart(false)), assertz(returnToStart(true)), Moves=OutputMoves)
     ;(Iterations = 0, logMessage('Could not find path back to relative origin.'))
     ; (
-        I0 is Iterations-1,
-        write('f'),write(CurrRoom),nl,
-        append([CurrRoom], CheckedRooms, NewCheckedRooms)
+        I0 is Iterations-1
         % find all moves that can be made from this room to another room
         , findall(
             s(NextRoom, NextDir, [Moves|Move]),
@@ -176,14 +175,19 @@ findPathToRelativeOrigin([s(CurrRoom, CurrDir, Moves)|StateTail], CheckedRooms, 
         % remove forward rooms to rooms which have already been explored
         , findall(State,
             (member(State, States)
-            ,\+isInCheckedRoom(State, NewCheckedRooms)
+            ,\+isInCheckedRoom(State, CheckedRooms)
             ),
             NewStates)        
-        % , write(NewStates),nl
+        , getRoomsFromState(NewStates, NewCheckedRooms)
+        , append(NewCheckedRooms, CheckedRooms, FinalCheckedRooms)
         , append(StateTail, NewStates, NewStateTail)
-        , findPathToRelativeOrigin(NewStateTail, NewCheckedRooms, OutputMoves, I0)
+        , findPathToRelativeOrigin(NewStateTail, FinalCheckedRooms, OutputMoves, I0)
     )
     .
+
+getRoomsFromState([], []).
+getRoomsFromState([s(Room, _, _)|T], [Room|T2]) :-
+    getRoomsFromState(T, T2).
 
 isInCheckedRoom(State, LRooms) :-
     s(room(X,Y),_,_) = State
