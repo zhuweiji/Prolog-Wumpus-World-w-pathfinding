@@ -2,7 +2,6 @@ from pyswip import Prolog
 from entities import Driver
 from helpers.Constants import *
 from map_functions.map_generator import map_generator
-import time
 
 from prolog_agent import printer
 
@@ -53,7 +52,7 @@ if (__name__ == "__main__"):
             # print(f"compound_perception[{i}]: {CompoundListOfPerceptionStrings[i]}")
             # print(f"type(compound_perception[{i}]): {type(CompoundListOfPerceptionStrings[i])}")
 
-            instruction = f"move({move_list[i]},{CompoundListOfPerceptionStrings[i]})"
+            instruction = f"move({move_list[i]},[{CompoundListOfPerceptionStrings[i]}])"
             # print(f"Agent Instruction:\t {instruction}")
             result = list(prolog.query(instruction))
             # print(f"Result : {result}")
