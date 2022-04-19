@@ -1,4 +1,6 @@
 % delete all references to these values, which are variable we will use
+:- abolish(reposition/1).
+
 :- abolish(hunter/3).
 :- abolish(visited/2).
 :- abolish(stench/2).
@@ -6,6 +8,7 @@
 :- abolish(wall/2).
 :- abolish(safe/2).
 :- abolish(glitter/1).
+:- abolish(glitter/2).
 
 :- abolish(possibleWumpus/2).
 :- abolish(possibleConfundus/2).
@@ -21,6 +24,7 @@
 
 % tells the compiler that these are variables which will change at runtime
 :- dynamic([
+    reposition/1,
     hunter/3,
     visited/2,
     stench/2,
@@ -28,6 +32,7 @@
     wall/2,
     safe/2,
     glitter/1,
+    glitter/2,
 
     possibleWumpus/2,
     possibleConfundus/2,
@@ -50,6 +55,7 @@ hunterAlive(true).
 % reborn.
 hunter(0,0, rnorth).
 visited(0,0).
+safe(0,0).
 
 % facts that may change over time.
 wumpusAlive(true).
@@ -78,11 +84,11 @@ explore(L) :-
     , assertz(justbumped(false)), assertz(justscreamed(false))
 
     % find some safe moves to get to a new safe unvisited room
-    , (simFindMovesToRoom([s(room(X,Y), D, [])], DestinationRoom, [], TL, 50)
+    , (simFindMovesToRoom([s(room(X,Y), D, [])], DestinationRoom, [], TL, 100)
         -> (logMessage('Destination room: ', DestinationRoom))
         ; (
             logMessage('Could not find new rooms to explore -  Returning to relative origin.')
-            , findPathToRelativeOrigin([s(room(X,Y), D, [])], [], TL, 50)
+            , findPathToRelativeOrigin([s(room(X,Y), D, [])], [], TL, 100)
         )
     )
     
@@ -223,6 +229,20 @@ simMakeMove(room(X0,Y0), D0, room(FX,FY), DF, Actions) :-
 %  PART TWO -  Execute some actions, and gain some new knowledge
 % The agent actions the moves gathered, and obtains a set of percepts from the world
 
+reposition(L):-
+    L = [Confounded, Stench, Tingle, Glitter, Bump, Scream]
+    , hunter(X,Y,_)
+    ,!
+    , usePrecepts(room(X,Y), Confounded, Stench, Tingle, Glitter, Bump, Scream)
+    ,!
+    , inferIfLackOfPrecepts(room(X,Y))
+    ,!
+    .
+
+move(A, L) :-
+    L = [Confounded, Stench, Tingle, Glitter, Bump, Scream]
+    , move(A, Confounded, Stench, Tingle, Glitter, Bump, Scream).
+
 % Execute a set of actions, moving the agent through the world. Agent is given list of percepts noticed in the new cell.
 move(Action, Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
     performAction(Action, Bump)
@@ -265,7 +285,9 @@ reborn :-
     retractall(possibleConfundus(_,_)),
 
     assertz(hunter(0,0,rnorth)),
-    assertz(visited(0,0)).
+    assertz(visited(0,0)),
+    assertz(safe(0,0)).
+
 
 % ACTIONS - These are utility functions that update the KBS with agent coordinates
 % move the agent forward by one cell.

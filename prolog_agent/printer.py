@@ -47,7 +47,7 @@ class PrettyMap:
             if person:
                 split_strs = string.split(person)
                 print(split_strs[0],end='')
-                print(bcolors.OKGREEN + person +bcolors.ENDC, end='')
+                print(bcolors.OKGREEN + person + bcolors.ENDC, end='')
                 print(split_strs[1])
             else:
                 print(string)
@@ -127,9 +127,9 @@ class KnownWorld:
                 if self.__dict__['bump']: 
                     mapcell.bump = True
         
+                if self.__dict__['scream']: 
+                    mapcell.scream = True
         
-        if self.__dict__['scream']: 
-            for cell in cells.values(): cell.scream = True
         
         max_x,max_y, min_x, min_y = 0,0,0,0
         for mapcell in cells.values():
