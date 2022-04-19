@@ -1,4 +1,6 @@
 % delete all references to these values, which are variable we will use
+:- abolish(reposition/1).
+
 :- abolish(hunter/3).
 :- abolish(visited/2).
 :- abolish(stench/2).
@@ -6,6 +8,7 @@
 :- abolish(wall/2).
 :- abolish(safe/2).
 :- abolish(glitter/1).
+:- abolish(glitter/2).
 
 :- abolish(possibleWumpus/2).
 :- abolish(possibleConfundus/2).
@@ -17,8 +20,11 @@
 :- abolish(justbumped/1).
 :- abolish(justscreamed/1).
 
+:- abolish(returnToStart/1).
+
 % tells the compiler that these are variables which will change at runtime
 :- dynamic([
+    reposition/1,
     hunter/3,
     visited/2,
     stench/2,
@@ -26,6 +32,7 @@
     wall/2,
     safe/2,
     glitter/1,
+    glitter/2,
 
     possibleWumpus/2,
     possibleConfundus/2,
@@ -33,7 +40,8 @@
     hasarrow/0,
     numGoldCoins/1,
     justbumped/1,
-    justscreamed/1
+    justscreamed/1,
+    returnToStart/1
 ]).
 
 
@@ -47,6 +55,7 @@ hunterAlive(true).
 % reborn.
 hunter(0,0, rnorth).
 visited(0,0).
+safe(0,0).
 
 % facts that may change over time.
 wumpusAlive(true).
@@ -57,6 +66,8 @@ glitter(false).
 
 justbumped(false).
 justscreamed(false).
+
+returnToStart(false).
 % ======================================= END FACTS ========================================================================
 
 % ===================== PERCEPTS - Implements the knowledge the agent will gain as it traverses the map =======
@@ -66,15 +77,24 @@ justscreamed(false).
 
 % finds a set of moves to a safe,unvisited room
 explore(L) :-
+    (returnToStart(true), logMessage('Agent has completed its exploration of the game space.'), L=[])
+    ;(
     hunter(X,Y,D)
     , retractall(justbumped(true)), retractall(justscreamed(true))
     , assertz(justbumped(false)), assertz(justscreamed(false))
 
     % find some safe moves to get to a new safe unvisited room
-    , simFindMovesToRoom([s(room(X,Y), D, [])], DestinationRoom, [], TL, 50),!
-    , logMessage('Destination room: '), write(DestinationRoom), nl
+    , (simFindMovesToRoom([s(room(X,Y), D, [])], DestinationRoom, [], TL, 100)
+        -> (logMessage('Destination room: ', DestinationRoom))
+        ; (
+            logMessage('Could not find new rooms to explore -  Returning to relative origin.')
+            , findPathToRelativeOrigin([s(room(X,Y), D, [])], [], TL, 100)
+        )
+    )
+    
     % every 'move' is [move1,...] so output list is 2-d array. Flatten list for output
-    , flatten2(TL, L).
+    , flatten2(TL, L)
+    ).
 
 % % wraps BFS find room function for better interface, and logs the output
 % findNewRoom(room(X,Y), DestinationRoom) :-
@@ -122,10 +142,9 @@ simFindMovesToRoom([s(CurrRoom, CurrDir, Moves)|StateTail], EndRoom, CheckedRoom
 %     % if current room is destination room, terminate
     ( CurrRoom = EndRoom, room(EX,EY)=EndRoom, \+visited(EX,EY),!, 
         (glitter(true) -> (logMessage('Picked up gold'), OutputMoves=[pickup|Moves]); Moves=OutputMoves))
-    ;(Iterations = 0)
+    ;(Iterations = 0, false)
     ; (
-        I0 is Iterations-1,
-        append([CurrRoom], CheckedRooms, NewCheckedRooms)
+        I0 is Iterations-1
         % find all moves that can be made from this room to another room
         , findall(
             s(NextRoom, NextDir, [Moves|Move]),
@@ -135,14 +154,46 @@ simFindMovesToRoom([s(CurrRoom, CurrDir, Moves)|StateTail], EndRoom, CheckedRoom
         % remove forward rooms to rooms which have already been explored
         , findall(State,
             (member(State, States)
-            ,\+isInCheckedRoom(State, NewCheckedRooms)
+            ,\+isInCheckedRoom(State, CheckedRooms)
             ),
             NewStates)        
         % , write(NewStates),nl
+        , getRoomsFromState(NewStates, NewCheckedRooms)
+        , append(NewCheckedRooms, CheckedRooms, FinalCheckedRooms)
         , append(StateTail, NewStates, NewStateTail)
-        , simFindMovesToRoom(NewStateTail, EndRoom, NewCheckedRooms, OutputMoves, I0)
+        , simFindMovesToRoom(NewStateTail, EndRoom, FinalCheckedRooms, OutputMoves, I0)
     )
     .
+
+% BFS search for safe moves to starting room
+findPathToRelativeOrigin([s(CurrRoom, CurrDir, Moves)|StateTail], CheckedRooms, OutputMoves, Iterations) :-
+%     % if current room is destination room, terminate
+    (CurrRoom = room(0,0),!, retractall(returnToStart(false)), assertz(returnToStart(true)), Moves=OutputMoves)
+    ;(Iterations = 0, logMessage('Could not find path back to relative origin.'))
+    ; (
+        I0 is Iterations-1
+        % find all moves that can be made from this room to another room
+        , findall(
+            s(NextRoom, NextDir, [Moves|Move]),
+            simMakeMove(CurrRoom,CurrDir,NextRoom,NextDir, Move),
+            States
+        )
+        % remove forward rooms to rooms which have already been explored
+        , findall(State,
+            (member(State, States)
+            ,\+isInCheckedRoom(State, CheckedRooms)
+            ),
+            NewStates)        
+        , getRoomsFromState(NewStates, NewCheckedRooms)
+        , append(NewCheckedRooms, CheckedRooms, FinalCheckedRooms)
+        , append(StateTail, NewStates, NewStateTail)
+        , findPathToRelativeOrigin(NewStateTail, FinalCheckedRooms, OutputMoves, I0)
+    )
+    .
+
+getRoomsFromState([], []).
+getRoomsFromState([s(Room, _, _)|T], [Room|T2]) :-
+    getRoomsFromState(T, T2).
 
 isInCheckedRoom(State, LRooms) :-
     s(room(X,Y),_,_) = State
@@ -177,6 +228,20 @@ simMakeMove(room(X0,Y0), D0, room(FX,FY), DF, Actions) :-
 
 %  PART TWO -  Execute some actions, and gain some new knowledge
 % The agent actions the moves gathered, and obtains a set of percepts from the world
+
+reposition(L):-
+    L = [Confounded, Stench, Tingle, Glitter, Bump, Scream]
+    , hunter(X,Y,_)
+    ,!
+    , usePrecepts(room(X,Y), Confounded, Stench, Tingle, Glitter, Bump, Scream)
+    ,!
+    , inferIfLackOfPrecepts(room(X,Y))
+    ,!
+    .
+
+move(A, L) :-
+    L = [Confounded, Stench, Tingle, Glitter, Bump, Scream]
+    , move(A, Confounded, Stench, Tingle, Glitter, Bump, Scream).
 
 % Execute a set of actions, moving the agent through the world. Agent is given list of percepts noticed in the new cell.
 move(Action, Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
@@ -220,7 +285,9 @@ reborn :-
     retractall(possibleConfundus(_,_)),
 
     assertz(hunter(0,0,rnorth)),
-    assertz(visited(0,0)).
+    assertz(visited(0,0)),
+    assertz(safe(0,0)).
+
 
 % ACTIONS - These are utility functions that update the KBS with agent coordinates
 % move the agent forward by one cell.

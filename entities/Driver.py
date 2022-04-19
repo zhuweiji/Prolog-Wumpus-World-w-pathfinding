@@ -12,7 +12,7 @@ class Driver:
         self.coins = 0
         self.arrow = 1
         self.percepts = []
-        self.MAX_MOVES = 50
+        self.MAX_MOVES = 200
         self.current_move_count = 0
 
     def shoot(self):

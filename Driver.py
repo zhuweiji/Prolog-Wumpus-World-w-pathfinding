@@ -3,6 +3,8 @@ import traceback
 from random import randint
 
 from pyswip import Prolog
+from prolog_agent import printer
+
 
 # import constants.MapConsts as MapConsts
 # from models.MapBuilder import MapBuilder
@@ -743,6 +745,9 @@ def main():
 
         r_map = RelativeMap()
         r_map.agent.setProlog(prolog)
+        
+        KBS = printer.KnownWorld(prolog_interface=prolog)
+        
 
         r_map.agent.rebornPrologAgent() # reset Prolog Agent with reborn/0
 
@@ -753,7 +758,9 @@ def main():
         r_map.agent.executeReposition(sensorIndicators)
         print("Initial Relative Map: ")
         r_map.printPercepts(sensorIndicators)
-        r_map.printRelativeMap(sensorIndicators)
+        # r_map.printRelativeMap(sensorIndicators)
+        KBS.update_world()
+        KBS.print_map()
 
         # prolog.assertz("explore([moveforward])")
 
@@ -791,7 +798,9 @@ def main():
                     sensorIndicators = abs_map.generateSensorIndicators(isShooting)
                     if(sensorIndicators[0] == "on"): # Stepped into Confundus Portal
                         r_map.printPercepts(sensorIndicators) # Print
-                        r_map.printRelativeMap(sensorIndicators)
+                        # r_map.printRelativeMap(sensorIndicators)
+                        KBS.update_world()
+                        KBS.print_map()
                         print("> Stepped into confundus portal, respawning in new, safe location")
 
                         abs_map.moveAgentToRandSafeLocation() # find new safe spawn spot
@@ -802,7 +811,9 @@ def main():
                         
 
                         r_map.printPercepts(sensorIndicators) # Print again
-                        r_map.printRelativeMap(sensorIndicators)
+                        # r_map.printRelativeMap(sensorIndicators)
+                        KBS.update_world()
+                        KBS.print_map()
                         break
 
                     if(sensorIndicators[4] == "on"): # if move forward and bump into wall
@@ -819,9 +830,11 @@ def main():
                     r_map.agent.executeMove(move, sensorIndicators)
                     print("\n")
                     r_map.printPercepts(sensorIndicators)
-                    r_map.printRelativeMap(sensorIndicators)
+                    # r_map.printRelativeMap(sensorIndicators)
+                    KBS.update_world()
+                    KBS.print_map()
 
-                    input("\nContinue?")
+                    # input("\nContinue?")
                     # print_debug_message(move, abs_map, r_map, sensorIndicators)
                 except Exception as error:
                     # r_map.agent.rebornPrologAgent() # reset prolog map

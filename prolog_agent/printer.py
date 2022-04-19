@@ -47,7 +47,7 @@ class PrettyMap:
             if person:
                 split_strs = string.split(person)
                 print(split_strs[0],end='')
-                print(bcolors.OKGREEN + person +bcolors.ENDC, end='')
+                print(bcolors.OKGREEN + person + bcolors.ENDC, end='')
                 print(split_strs[1])
             else:
                 print(string)
@@ -66,6 +66,12 @@ class PrettyMap:
             print_person_in_color(f"{y_coords} {' '*spacing_req}| {middle_row}")
             print(f"{' '*AXIS_SPACING}| {third_row}")
             print()
+            
+        last_row = self._map[::-1][-1]
+        x_axis_print = ' '.join(f' {cell.coords[0]} ' for cell in last_row)
+        print(' '*AXIS_SPACING, '-'*(len(x_axis_print)))
+        print(f"{' '*AXIS_SPACING}  {x_axis_print}")
+        # print([cell.coords for cell in row])
             
     
 @dataclass
@@ -117,11 +123,13 @@ class KnownWorld:
                 if coords not in cells: cells[coords] = MapCell(coords=coords) 
                 mapcell = cells[coords]
                 mapcell.agent_direction = attribute_value.direction
+
+                if self.__dict__['bump']: 
+                    mapcell.bump = True
         
-        if self.__dict__['bump']: 
-            for cell in cells.values(): cell.bump = True
-        if self.__dict__['scream']: 
-            for cell in cells.values(): cell.scream = True
+                if self.__dict__['scream']: 
+                    mapcell.scream = True
+        
         
         max_x,max_y, min_x, min_y = 0,0,0,0
         for mapcell in cells.values():
