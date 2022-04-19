@@ -67,6 +67,12 @@ class PrettyMap:
             print(f"{' '*AXIS_SPACING}| {third_row}")
             print()
             
+        last_row = self._map[::-1][-1]
+        x_axis_print = ' '.join(f' {cell.coords[0]} ' for cell in last_row)
+        print(' '*AXIS_SPACING, '-'*(len(x_axis_print)))
+        print(f"{' '*AXIS_SPACING}  {x_axis_print}")
+        # print([cell.coords for cell in row])
+            
     
 @dataclass
 class KnownWorld:
@@ -117,9 +123,11 @@ class KnownWorld:
                 if coords not in cells: cells[coords] = MapCell(coords=coords) 
                 mapcell = cells[coords]
                 mapcell.agent_direction = attribute_value.direction
+
+                if self.__dict__['bump']: 
+                    mapcell.bump = True
         
-        if self.__dict__['bump']: 
-            for cell in cells.values(): cell.bump = True
+        
         if self.__dict__['scream']: 
             for cell in cells.values(): cell.scream = True
         
