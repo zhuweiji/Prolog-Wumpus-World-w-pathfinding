@@ -68,6 +68,14 @@ class DriverTest(unittest.TestCase):
         perceptionList = self.d.move(action_list)
         self.assert_(self.d.coins == 1, True)
 
+    def test_remove_gold_from_map(self):
+        # NOTE: This only works when gold coords is [0,0]
+        action_list = [Instructions.PICKUP.value]
+        perceptionList = self.d.move(action_list)
+        action_list = [Instructions.PICKUP.value]
+        perceptionList = self.d.move(action_list)
+        self.assert_(self.d.coins == 1, True)
+
     # Unit Tests for Wumpus Shooting
     def test_north_wumpus_destruction(self):
         action_list = [Instructions.TURN_RIGHT.value, Instructions.MOVE_FORWARD.value, Instructions.MOVE_FORWARD.value,

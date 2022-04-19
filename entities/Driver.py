@@ -23,6 +23,15 @@ class Driver:
         self.coins += 1
         return
 
+    def enclosed_pickup(self, curr_x, curr_y):
+        # check if current cell has glitter percept
+        position_perception = self.world_map[curr_y][curr_x]
+        if '*' in position_perception:
+            # print("Found Coin")
+            self.coins += 1
+            self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("*", "")
+
+
     def move(self, instructionList) -> list:
 
         perceptionList = []
@@ -94,9 +103,11 @@ class Driver:
                 position_perception = self.world_map[curr_y][curr_x]
                 if '*' in position_perception:
                     # print("Found Coin")
-                    self.pickup()
+                    # self.pickup()
+                    self.enclosed_pickup(curr_x, curr_y)
                 # else:
                     # print("Invalid pickup instruction")
+
 
             elif (instruction == Constants.Instructions.SHOOT.value):
                 # TODO check if there is any wumpus ahead
@@ -110,9 +121,9 @@ class Driver:
             curr_x = self.position[0]
             curr_y = self.position[1]
 
-            # self.world_map[curr_y][curr_x] += "-"
+            self.world_map[curr_y][curr_x] += "-"
             # self.print_map()
-            # self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("-", "")
+            self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("-", "")
 
             # check final position for percepts
             self.percepts = self.world_map[curr_y][curr_x]
@@ -125,7 +136,7 @@ class Driver:
         # built_perception = self.perception_builder()
 
         self.world_map[self.position[1]][self.position[0]] += "-"
-        self.print_map()
+        # self.print_map()
         self.world_map[self.position[1]][self.position[0]] = self.world_map[self.position[1]][self.position[0]].replace("-", "")
         return FinalListOfPerceptionStrings
 
