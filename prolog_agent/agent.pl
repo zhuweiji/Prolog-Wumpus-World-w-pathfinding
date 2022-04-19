@@ -4,12 +4,18 @@
 :- abolish(stench/2).
 :- abolish(tingle/2).
 :- abolish(wall/2).
+:- abolish(safe/2).
+:- abolish(glitter/1).
+
 :- abolish(possibleWumpus/2).
 :- abolish(possibleConfundus/2).
 :- abolish(wumpusAlive/1).
 :- abolish(hasarrow/0).
 :- abolish(numGoldCoins/1).
-:- abolish(safe/2).
+
+
+:- abolish(justbumped/1).
+:- abolish(justscreamed/1).
 
 % tells the compiler that these are variables which will change at runtime
 :- dynamic([
@@ -19,12 +25,15 @@
     tingle/2,
     wall/2,
     safe/2,
+    glitter/1,
 
     possibleWumpus/2,
     possibleConfundus/2,
     wumpusAlive/1,
     hasarrow/0,
-    numGoldCoins/1
+    numGoldCoins/1,
+    justbumped/1,
+    justscreamed/1
 ]).
 
 
@@ -44,7 +53,10 @@ wumpusAlive(true).
 hasarrow.
 numGoldCoins(0).
 iscounfounded(false).
+glitter(false).
 
+justbumped(false).
+justscreamed(false).
 % ======================================= END FACTS ========================================================================
 
 % ===================== PERCEPTS - Implements the knowledge the agent will gain as it traverses the map =======
@@ -55,11 +67,12 @@ iscounfounded(false).
 % finds a set of moves to a safe,unvisited room
 explore(L) :-
     hunter(X,Y,D)
-    % find a new safe, unvisited room to go to
-    % , findNewRoom(room(X,Y), DestinationRoom),!
-    % find some safe moves to get to that room
+    , retractall(justbumped(true)), retractall(justscreamed(true))
+    , assertz(justbumped(false)), assertz(justscreamed(false))
+
+    % find some safe moves to get to a new safe unvisited room
     , simFindMovesToRoom([s(room(X,Y), D, [])], DestinationRoom, [], TL, 50),!
-    , write('Destination room: '), write(DestinationRoom), nl
+    , logMessage('Destination room: '), write(DestinationRoom), nl
     % every 'move' is [move1,...] so output list is 2-d array. Flatten list for output
     , flatten2(TL, L).
 
@@ -107,7 +120,8 @@ roomIsDangerous(room(X,Y)) :-
 % BFS search for safe moves to a given room from a starting room
 simFindMovesToRoom([s(CurrRoom, CurrDir, Moves)|StateTail], EndRoom, CheckedRooms, OutputMoves, Iterations) :-
 %     % if current room is destination room, terminate
-    (CurrRoom = EndRoom, room(EX,EY)=EndRoom, \+visited(EX,EY),!, Moves=OutputMoves)
+    ( CurrRoom = EndRoom, room(EX,EY)=EndRoom, \+visited(EX,EY),!, 
+        (glitter(true) -> (logMessage('Picked up gold'), OutputMoves=[pickup|Moves]); Moves=OutputMoves))
     ;(Iterations = 0)
     ; (
         I0 is Iterations-1,
@@ -242,22 +256,26 @@ hunterActualPickup:-
     addGoldCoin.
 
 % PART THREE - Use the percepts gained from the move to update the knowledge base
-
-f(L) :-
-    move(moveforward,off,off,off,off,off,off)
-    , move(moveforward,off,off,off,off,off,off)
-    , move(moveforward,off,off,on,off,off,off)
-    , explore(L).
+% f(L) :-
+%     move(moveforward,off,off,off,off,off,off)
+%     , move(moveforward,off,off,off,off,off,off)
+%     , move(moveforward,off,off,on,off,off,off)
+%     , explore(L).
 
 % Update agent knowledge of the world with the percepts it is given
 usePrecepts(room(X,Y), Confounded, Stench, Tingle, Glitter, Bump, Scream) :-
     (Confounded=on -> reborn                 ; true 
     , Stench=on -> addStenchKnowledge(room(X,Y)) ; true
     , Tingle=on -> addTingleKnowledge(room(X,Y)) ; true
-    , Glitter=on -> pickup                   ; true
+    , Glitter=on -> addGoldKnowledge         ; true
     , Bump=on -> addWallKnowledge            ; true
     , Scream=on -> updateWumpusKilled        ; true
     ); true
+    .
+
+addGoldKnowledge:-
+    retractall(glitter(false))
+    , assertz(glitter(true))
     .
 
 % when moving in a new cell, the knowledge that some percepts are not detected is information in itself
@@ -335,19 +353,26 @@ addWallKnowledge:-
     , getForwardRoom(room(X, Y), D, room(X1,Y1))
     , assertz(wall(X1,Y1))
     , retractall(safe(X1,Y1))
+    , retractall(justbumped(false))
+    , assertz(justbumped(true))
     . 
 
 addGoldCoin :-
     numGoldCoins(X),
     X1 is X+1,
     retractall(numGoldCoins(_)),
-    assertz(numGoldCoins(X1)).
+    assertz(numGoldCoins(X1)),
+    retractall(glitter(true)),
+    assertz(glitter(false)).
 
 updateWumpusKilled :- 
     retractall(wumpusAlive(_))
     , retractall(possibleWumpus(_,_))
     , retractall(stench(_,_))
     , assertz(wumpusAlive(false))
+    , retractall(justscreamed(false))
+    , assertz(justscreamed(true))
+
     .
 
 % PART FOUR - Utilities
@@ -362,7 +387,15 @@ turnleft(D0, D1) :-
 turnright(D0, D1) :-
     rightof(D0,D1).
 
-pickup :- true.
+pickup :- 
+    numGoldCoins(I)
+    ,I0 is I+1
+    , retractall(numGoldCoins(_))
+    , assertz(numGoldCoins(I0))
+    , retractall(glitter(true))
+    , assertz(glitter(false))
+
+    .
 shoot :- true.
 
     
