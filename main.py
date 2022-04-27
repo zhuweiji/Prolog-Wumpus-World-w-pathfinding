@@ -1,3 +1,4 @@
+from shutil import move
 from pyswip import Prolog
 from entities import Driver
 from helpers.Constants import *
@@ -9,33 +10,37 @@ from prolog_agent import printer
 if (__name__ == "__main__"):
     prolog = Prolog()
     prolog.consult("prolog_agent/agent.pl")
-
+    
     KBS = printer.KnownWorld(prolog_interface=prolog)
     
     position = [0, 0]
     direction = Directions.R_NORTH.value
 
     wumpus_coords = [[4, 2]]
-    gold_coords = [[2, 0]]
-    portal_coords = [[0, 5]]
+    gold_coords = [[2, 0], [7,4]]
+    portal_coords = [[3, 5], [4,5], [3,4]]
     world_map = map_generator(wumpus_coords=wumpus_coords, gold_coords=gold_coords, portal_coords=portal_coords)
 
     d = Driver.Driver(position, direction, world_map)
 
-
+    prolog.query("reborn.")
+    prolog.query("reposition([off,off,off,off,off,off]).")
     while (d.current_move_count < d.MAX_MOVES):
         move_list = []
 
         for soln in prolog.query("explore(L)"):
             endIndex = len(soln["L"]) - 1
             move_list = soln["L"][0:endIndex]
-            # print(soln["L"])
+            
+            if not soln['L']:
+                print('explore(L) returned an empty list.')
+                print('Game complete!')
+                print(f'Collected {KBS.numGoldCoins} out of {len(gold_coords)} coins')
+                exit(0)
+            
             if (type(soln["L"][-1]) == str):
                 move_list.append(soln["L"][-1])
-            # print(f"Suggested Move List : {move_list}")
 
-        if (len(move_list)==0):
-            break
 
         print(f"Driver Position before movement: {d.position}")
         CompoundListOfPerceptionStrings = d.move(move_list)
@@ -53,7 +58,7 @@ if (__name__ == "__main__"):
             # print(f"compound_perception[{i}]: {CompoundListOfPerceptionStrings[i]}")
             # print(f"type(compound_perception[{i}]): {type(CompoundListOfPerceptionStrings[i])}")
 
-            instruction = f"move({move_list[i]},{CompoundListOfPerceptionStrings[i]})"
+            instruction = f"move({move_list[i]},[{CompoundListOfPerceptionStrings[i]}])"
             # print(f"Agent Instruction:\t {instruction}")
             result = list(prolog.query(instruction))
             # print(f"Result : {result}")
