@@ -3,7 +3,6 @@ from pyswip import Prolog
 from entities import Driver
 from helpers.Constants import *
 from map_functions.map_generator import map_generator
-import time
 
 from prolog_agent import printer
 
