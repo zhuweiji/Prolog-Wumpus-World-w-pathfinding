@@ -1,6 +1,6 @@
 import unittest
 
-from entities.Driver import Driver
+from entities.DriverLogic import Driver
 from helpers.Constants import *
 from map_functions.map_generator import *
 

@@ -274,7 +274,7 @@ class MapCell:
 
 if __name__ == "__main__":
     pl = Prolog()
-    pl.consult('prolog_agent/agent.pl')
+    pl.consult('prolog_agent/Agent.pl')
     kbs = KnownWorld(prolog_interface=pl)
     
     i = 0
