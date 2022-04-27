@@ -277,6 +277,8 @@ performAction(Action, Bump) :-
 reborn :-
     retractall(hunter(_,_,_)),
     retractall(visited(_,_)),
+    retractall(safe(_,_)),
+
 
     retractall(stench(_,_)),
     retractall(tingle(_,_)),
@@ -455,14 +457,14 @@ turnright(D0, D1) :-
     rightof(D0,D1).
 
 pickup :- 
-    numGoldCoins(I)
-    ,I0 is I+1
-    , retractall(numGoldCoins(_))
-    , assertz(numGoldCoins(I0))
-    , retractall(glitter(true))
-    , assertz(glitter(false))
+    addGoldCoin.
+    % numGoldCoins(I)
+    % ,I0 is I+1
+    % , retractall(numGoldCoins(_))
+    % , assertz(numGoldCoins(I0))
+    % , retractall(glitter(true))
+    % , assertz(glitter(false))
 
-    .
 shoot :- true.
 
     

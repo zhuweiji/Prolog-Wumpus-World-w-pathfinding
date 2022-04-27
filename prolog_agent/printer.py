@@ -93,8 +93,11 @@ class KnownWorld:
     hasarrow:          bool = True
     numGoldCoins:      int  = 0
     
+    home_agent: bool = False
+    
     def __post_init__(self) -> None:
-        assert self.prolog_interface.query('printHunter.'), "Prolog interface to KBS printer not available"
+        if self.prolog_interface.query('printHunter.'):
+            self.home_agent = True
         
     def print_map(self):
         rel_map = self.create_map()
@@ -175,7 +178,7 @@ class KnownWorld:
         self.bump = self.query_bool('justbumped')
         self.scream = self.query_bool('justscreamed')
         
-        # self.numGoldCoins = self.query_bool('numGoldCoins')
+        self.numGoldCoins = self.query_one_numeral('numGoldCoins')
         
     def restart_world(self):
         pass
@@ -197,6 +200,13 @@ class KnownWorld:
         res = self.query_first_solution(f'{compound}(O).').get('O', None)
         if not res: raise KBSPrinterException(f'Could not query {compound} status')
         return res == 'true' 
+    
+    def query_one_numeral(self,compound):
+        res = self.query_first_solution(f'{compound}(O).').get('O', None)
+        if res != 0:
+            if not res: raise KBSPrinterException(f'Could not query {compound} status')
+        return res
+            
                 
     def query_first_solution(self, query):
         res = list(self.prolog_interface.query(query))

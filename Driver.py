@@ -129,13 +129,12 @@ class Agent:
         if not(isGoodResetQuery) or len(walls_test) != 0 or\
             len(wumpus_test) != 0 or len(confunduses_test) != 0 or\
             len(tingle_test) != 0 or len(glitter_test) != 0 or\
-            len(visited_test) != 1 or len(safe_test) != 1:
+            len(safe_test) != 1:
             print(walls_test)
             print(wumpus_test)
             print(confunduses_test)
             print(tingle_test)
             print(glitter_test)
-            print(visited_test)
             print(safe_test)
             raise Exception("Prolog Agent Map was not reset properly")
 
@@ -251,7 +250,7 @@ class MapBuilder:
         confunduses_set = set()
         while(is_valid != True):
             confunduses_set.clear()
-            while(len(confunduses_set) != 3):
+            while(len(confunduses_set) != 1):
                 c = self.randCoord()
                 confunduses_set.add(c)
             self.confunduses = list(confunduses_set)
@@ -749,7 +748,7 @@ def main():
         KBS = printer.KnownWorld(prolog_interface=prolog)
         
 
-        r_map.agent.rebornPrologAgent() # reset Prolog Agent with reborn/0
+        # r_map.agent.rebornPrologAgent() # reset Prolog Agent with reborn/0
 
         print("====================================================== \n")
 
@@ -812,8 +811,8 @@ def main():
 
                         r_map.printPercepts(sensorIndicators) # Print again
                         # r_map.printRelativeMap(sensorIndicators)
-                        KBS.update_world()
-                        KBS.print_map()
+                        # KBS.update_world()
+                        # KBS.print_map()
                         break
 
                     if(sensorIndicators[4] == "on"): # if move forward and bump into wall
@@ -850,8 +849,9 @@ def main():
             # isGameOver += 1
 
         print("\n\nGame Over! Hunt the Wumpus finished.")
-        runDriver = input("Enter (Y/n) to continue another round: ")
-        if runDriver.lower() not in ["yes", "y"]: print("Exiting program...")
+        exit(0)
+        # runDriver = input("Enter (Y/n) to continue another round: ")
+        # if runDriver.lower() not in ["yes", "y"]: print("Exiting program...")
 
 
 if __name__ == '__main__':

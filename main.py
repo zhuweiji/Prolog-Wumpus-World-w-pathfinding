@@ -21,17 +21,23 @@ if (__name__ == "__main__"):
 
     d = Driver.Driver(position, direction, world_map)
 
-
+    prolog.query("reborn.")
+    prolog.query("reposition([off,off,off,off,off,off]).")
     while (d.current_move_count < d.MAX_MOVES):
         move_list = []
 
         for soln in prolog.query("explore(L)"):
             endIndex = len(soln["L"]) - 1
             move_list = soln["L"][0:endIndex]
-            # print(soln["L"])
+
+            if not soln['L']:
+                print('explore(L) returned an empty list.')
+                print('Game complete!')
+                print(f'Collected {KBS.numGoldCoins} out of {len(gold_coords)} coins')
+                exit(0)
+
             if (type(soln["L"][-1]) == str):
                 move_list.append(soln["L"][-1])
-            # print(f"Suggested Move List : {move_list}")
 
         if (len(move_list)==0):
             break
