@@ -16,7 +16,7 @@ if (__name__ == "__main__"):
 
     wumpus_coords = [[4, 2]]
     gold_coords = [[2, 0]]
-    portal_coords = [[0, 5]]
+    portal_coords = [[0, 3]]
     world_map = map_generator(wumpus_coords=wumpus_coords, gold_coords=gold_coords, portal_coords=portal_coords)
 
     d = Driver.Driver(position, direction, world_map)
@@ -36,15 +36,15 @@ if (__name__ == "__main__"):
         if (len(move_list)==0):
             break
 
-        print(f"Driver Position before movement: {d.position}")
+        # print(f"Driver Position before movement: {d.position}")
         CompoundListOfPerceptionStrings = d.move(move_list)
-        print(f"Driver Position after  movement: {d.position}")
+        # print(f"Driver Position after  movement: {d.position}")
 
         # print(f"len(move_list) == len(CompoundListOfPerceptionStrings) = {len(move_list) == len(CompoundListOfPerceptionStrings)}")
 
-        print(f"Executed Move List : {move_list}")
+        print(f"Driver: Move List : {move_list}")
 
-        print(f"Built Perception: {CompoundListOfPerceptionStrings}")
+        print(f"Driver : Built Perception: {CompoundListOfPerceptionStrings}")
         for i in range (0, len(move_list)):
 
             # print(f"Iteration : {i}")

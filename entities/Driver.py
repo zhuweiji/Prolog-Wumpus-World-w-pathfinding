@@ -29,7 +29,7 @@ class Driver:
         if '*' in position_perception:
             # print("Found Coin")
             self.coins += 1
-            self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("*", "")
+            self.world_map[curr_y][curr_x] = self.world_map[curr_y][curr_x].replace("*", ".")
 
 
     def move(self, instructionList) -> list:
@@ -188,6 +188,7 @@ class Driver:
         glitter = "off"
         bump = "off"
         scream = "off"
+        print_result = ""
         for perception in self.percepts:
             # print(f"self.percepts : {self.percepts}")
             if (perception == "="):
@@ -200,11 +201,11 @@ class Driver:
                 # tingle from nearby portal
                 tingle = "on"
             elif (perception == "O"):
-                print("Found confounded")
+                # print("Found confounded")
                 # stepped on portal
                 confounded = "on"
                 self.direction = Constants.Directions.R_NORTH.value
-                self.position = [4, 4]
+                self.position = [3,3]
                 # TODO reset coordinates to random point
             elif (perception == "B"):
                 # bumped into wall
@@ -216,11 +217,22 @@ class Driver:
                 # death condition
                 sys.exit(1)
         result = confounded +  "," +  stench  + "," + tingle  + "," +  glitter  + "," +  bump  + "," +  scream
+
+        print_result = self.print_result(print_result, "Confounded", confounded)
+        print_result = self.print_result(print_result, "Stench", stench)
+        print_result = self.print_result(print_result, "Tingle", tingle)
+        print_result = self.print_result(print_result, "Glitter", glitter)
+        print_result = self.print_result(print_result, "Bump", bump)
+        print_result = self.print_result(print_result, "Scream", scream)
+
+        print("Driver: " + print_result)
+
         return result
 
     def print_map(self):
         x, y = config.MAP_SIZE
         self.world_map[self.position[1]][self.position[0]] += "-"
+        print("Driver: Absolute Map")
         for i in reversed(range(0, y)):
             for j in range(0, x):
                 print(self.world_map[i][j], end="\t")
@@ -228,6 +240,15 @@ class Driver:
         self.world_map[self.position[1]][self.position[0]] = self.world_map[self.position[1]][self.position[0]].replace("-", "")
 
 
+    def print_result(self, OriginalString, String_To_Add, indicator):
+        if (indicator == "on"):
+            OriginalString += String_To_Add
+        else:
+            OriginalString += String_To_Add[0]
+
+        OriginalString += "-"
+
+        return OriginalString
 
 
 def rightof(direction):

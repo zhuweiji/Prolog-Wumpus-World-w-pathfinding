@@ -125,12 +125,10 @@ def map_generator(wumpus_coords=None, gold_coords:list = None, portal_coords:lis
     stench_coords = generate_surrounding_indicators(wumpus_coords)
     tingle_coords = generate_surrounding_indicators(portal_coords)
 
-    world_map = [['','','','','','',''],
-                ['','','','','','',''],
-                ['','','','','','',''],
-                ['','','','','','',''],
-                ['','','','','','',''],
-                ['','','','','','','']]
+    world_map = [['','','','',''],
+                ['','','','',''],
+                ['','','','',''],
+                ['','','','','']]
 
     for i in range (0, y):
         for j in range(0, x):
