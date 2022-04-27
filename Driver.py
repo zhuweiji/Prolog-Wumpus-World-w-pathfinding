@@ -1,9 +1,8 @@
 from pyswip import Prolog
 from entities import DriverLogic
 from helpers.Constants import *
+from helpers import printer
 from map_functions.map_generator import map_generator
-
-from prolog_agent import printer
 
 if (__name__ == "__main__"):
     prolog = Prolog()

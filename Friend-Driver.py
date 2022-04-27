@@ -2,7 +2,7 @@ import enum
 from random import randint
 
 from pyswip import Prolog
-from prolog_agent import printer
+from helpers import printer
 
 
 # import constants.MapConsts as MapConsts
